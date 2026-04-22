@@ -2595,7 +2595,7 @@ async function renderOnboarding() {
   app.innerHTML = `
     <div class="container fade-up" style="max-width: 500px; padding: 4rem 1rem; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
       <div style="text-align: center; margin-bottom: 3rem;">
-        <img src="${logo}" alt="Urban Tribe" style="width: 160px; margin-bottom: 1.5rem;">
+        <img src="${logo}" alt="Urban Tribe" style="width: 100%; max-width: 280px; margin-bottom: 2.5rem; object-fit: contain;">
         <h1 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 1rem;">Welcome to Urban Tribe</h1>
         <p style="color: #64748b; font-size: 1.1rem; line-height: 1.6;">Before we start, let's connect you to your tribe.</p>
       </div>
@@ -2629,7 +2629,7 @@ async function renderOnboarding() {
       </div>
 
       <div style="margin-top: 3rem; text-align: center;">
-        <button onclick="signOut().then(() => renderLandingPage())" style="background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; text-decoration: underline;">Sign Out</button>
+        <button onclick="handleLogout()" style="background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; text-decoration: underline;">Sign Out</button>
       </div>
     </div>
   `;
