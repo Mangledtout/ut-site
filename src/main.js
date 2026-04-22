@@ -1713,6 +1713,16 @@ async function renderDashboard(activeTab = 'dash') {
   const user = session?.user;
   if (!user) return renderLogin();
 
+  // Handle Stripe Redirects
+  const params = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
+  if (params.get('success')) {
+    alert('Payment Successful! Your booking is being processed.');
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash.split('?')[0]);
+  } else if (params.get('canceled')) {
+    alert('Payment Canceled.');
+    window.history.replaceState({}, document.title, window.location.pathname + window.location.hash.split('?')[0]);
+  }
+
   let profile = {};
   try {
     profile = await getMyProfile();
@@ -1837,9 +1847,13 @@ async function renderSocialFeed() {
       `;
       return;
     }
+    const invoices = await getMyInvoices();
+    const mySessions = new Set(invoices.map(i => `${i.activity_id}-${i.event_date}`));
+
     feedEl.innerHTML = feed.map(item => {
       const namesStr = item.attendeeNames.map(name => `<span style="color: var(--primary-color); font-weight: 800;">${name}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
       const verb = item.attendeeNames.length > 1 ? 'are' : 'is';
+      const isJoined = mySessions.has(`${item.activity_id}-${item.event_date}`);
 
       return `
       <div class="card" style="margin-bottom: 0;">
@@ -1854,7 +1868,13 @@ async function renderSocialFeed() {
         </p>
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
           <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; background: #f8fafc; padding: 4px 10px; border-radius: 6px;">🗓️ ${item.event_date}</span>
-          <button onclick='window.joinFriendActivity(${JSON.stringify(item.activities)}, "${item.event_date}")' class="btn btn-primary" style="width: auto; padding: 6px 16px; border-radius: 10px; font-size: 0.8rem;">Join Them</button>
+          ${isJoined ? `
+            <div style="color: #059669; font-weight: 800; font-size: 0.75rem; background: #f0fdf4; padding: 4px 12px; border-radius: 8px; border: 1px solid #dcfce7; display: flex; align-items: center; gap: 4px;">
+              Joined ✅
+            </div>
+          ` : `
+            <button onclick='window.joinFriendActivity(${JSON.stringify(item.activities)}, "${item.event_date}")' class="btn btn-primary" style="width: auto; padding: 6px 16px; border-radius: 10px; font-size: 0.8rem;">Join Them</button>
+          `}
         </div>
       </div>
     `}).join('');
@@ -1972,13 +1992,22 @@ async function renderActivities() {
 async function renderUpcomingBookings() {
   try {
     const invoices = await getMyInvoices();
+    console.log('Fetched Invoices Details:', invoices.map(i => ({ id: i.id, date: i.event_date, status: i.status, activity: i.activities?.name })));
     const ledgerEl = document.getElementById('ledger-list');
     if (!ledgerEl) return;
 
     const groupedBookings = invoices.reduce((acc, i) => {
       const key = `${i.activity_id}-${i.event_date}`;
-      if (!acc[key]) acc[key] = { ...i, items: [] };
-      acc[key].items.push(i);
+      if (!acc[key]) {
+        acc[key] = { ...i, items: [i] };
+      } else {
+        acc[key].items.push(i);
+        // Prioritize 'paid' status for the main record
+        if (i.status === 'paid' && acc[key].status !== 'paid') {
+          acc[key].status = 'paid';
+          acc[key].amount = i.amount; // Use the paid one as primary
+        }
+      }
       return acc;
     }, {});
 
@@ -1989,15 +2018,24 @@ async function renderUpcomingBookings() {
     }
 
     ledgerEl.innerHTML = bookingsArr.map(g => {
-      const totalAmount = g.items.reduce((sum, i) => sum + (i.amount || 0), 0);
-      const allPaid = g.items.every(i => i.status === 'paid');
-      const childrenStatusHtml = g.items.map(i => {
-        const name = i.children?.name || i.profiles?.full_name || (i.adult_count > 0 ? 'Adult' : 'N/A');
-        return `<span style="color: var(--primary-color); font-weight: 800;">${name}</span>`;
-      }).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
+      const isPaid = g.status === 'paid';
+      const namesSet = new Set();
+      let totalAdults = 0;
+      let totalAmount = 0;
+
+      g.items.forEach(item => {
+        if (item.children?.name) namesSet.add(item.children.name);
+        totalAdults += (item.adult_count || 0);
+        totalAmount += (item.amount || 0);
+      });
+
+      const names = Array.from(namesSet);
+      if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
+      
+      const childrenStatusHtml = names.map(name => `<span style="color: var(--primary-color); font-weight: 800;">${name}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
 
       return `
-        <div class="card" style="border-left: 4px solid ${allPaid ? 'var(--success)' : 'var(--warning)'}; margin-bottom: 12px; padding: 1.25rem;">
+        <div class="card" style="border-left: 4px solid ${isPaid ? 'var(--success)' : 'var(--warning)'}; margin-bottom: 12px; padding: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div style="flex: 1;">
               <p style="font-weight: 800; color: #1e293b; margin: 0; font-size: 1.1rem; line-height: 1.2;">${g.activities?.name || 'Unknown Activity'}</p>
@@ -2008,9 +2046,9 @@ async function renderUpcomingBookings() {
               </div>
             </div>
             <div style="text-align: right; min-width: 90px;">
-              <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount}</p>
-              <div style="display: inline-block; font-size: 0.65rem; font-weight: 800; color: ${allPaid ? 'var(--success)' : 'var(--warning)'}; background: ${allPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${allPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
-                ${allPaid ? 'Paid' : 'Pending'}
+              <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount.toFixed(2)}</p>
+              <div style="display: inline-block; font-size: 0.65rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
+                ${isPaid ? 'Paid' : 'Pending'}
               </div>
               <div style="margin-top: 12px;">
                 <button onclick='window.handleEditBooking(${JSON.stringify(g.items).replace(/'/g, "&apos;")})' class="btn btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.75rem; border-radius: 10px; font-weight: 800; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">Edit</button>
@@ -2251,8 +2289,15 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
           <label style="display: block; font-weight: 700; color: #166534; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">1. Select Date</label>
           <select id="enroll-date" class="form-select" style="background: #fff; padding: 0.75rem; border-radius: 10px; border-color: #bbf7d0; font-weight: 600;">
             <option value="">Choose a date...</option>
-            ${(activity.event_dates || []).filter(d => d >= new Date().toISOString().split('T')[0]).map(d => `<option value="${d}">${d}</option>`).join('')}
-            ${(!activity.event_dates && activity.recurrence) ? `<option value="${activity.recurrence}">${activity.recurrence}</option>` : ''}
+            ${(() => {
+              const dates = (activity.event_dates || []).filter(d => d >= new Date().toISOString().split('T')[0]);
+              if (preSelectedDate && !dates.includes(preSelectedDate)) {
+                dates.push(preSelectedDate);
+                dates.sort();
+              }
+              return dates.map(d => `<option value="${d}">${d}</option>`).join('');
+            })()}
+            ${(!activity.event_dates && activity.recurrence && activity.recurrence !== preSelectedDate) ? `<option value="${activity.recurrence}">${activity.recurrence}</option>` : ''}
           </select>
           <div id="capacity-indicator" style="margin-top: 10px; display: none;"></div>
         </div>
@@ -2647,8 +2692,10 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
     const waiverAccept = document.getElementById('w-accept');
     if (!waiverAccept.checked) { alert('You must accept the waiver to continue.'); return; }
 
-    const eventDate = enrollDateSelect.value
-    const adultInputs = Array.from(document.querySelectorAll('.adult-name'))
+    const eventDate = enrollDateSelect.value;
+    const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    const adultCount = parseInt(adultCountSelect.value);
+    
     const contact = {
       first_name: document.getElementById('c-fname').value,
       last_name: document.getElementById('c-lname').value,
@@ -2656,83 +2703,53 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
       phone: document.getElementById('c-phone').value,
       postcode: document.getElementById('c-postcode').value,
       permissions: selectedPermissionsAnswers
-    }
-    confirmBtn.disabled = true; confirmBtn.textContent = 'Processing...'
+    };
+
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Preparing Payment...';
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value)
-      const adultCount = parseInt(adultCountSelect.value)
-      const adultNames = adultInputs.map(input => input.value.trim())
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Please sign in to book.');
 
-      // Create child enrollments
-      for (const kidId of selectedKidIds) {
-        await enrollChild({
-          parent_id: user.id,
-          activity_id: activity.id,
-          child_id: kidId,
-          amount: activity.price_child,
-          status: 'unpaid',
-          event_date: eventDate,
-          metadata: contact
-        });
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        },
+        body: {
+          activity,
+          selectedKidIds,
+          adultCount,
+          eventDate,
+          contact
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('Failed to create payment session.');
       }
 
-      // Create adult enrollment if any
-      if (adultCount > 0) {
-        await supabase.from('invoices').insert([{
-          parent_id: user.id,
-          activity_id: activity.id,
-          amount: adultCount * activity.price_adult,
-          status: 'unpaid',
-          adult_count: adultCount,
-          adult_attendees: adultNames,
-          event_date: eventDate,
-          metadata: contact
-        }]);
-      }
-
-      // Sync permissions back to child metadata for consistency
-      if (selectedPermissionsAnswers && Object.keys(selectedPermissionsAnswers).length > 0) {
-        const permMapping = {
-          'Animals': 'p_animals',
-          'Antihistamine (Piriton)': 'p_piriton',
-          'Calpol': 'p_calpol',
-          'Emergency Medical Treatment': 'p_emergency',
-          'First Aid': 'p_firstaid',
-          'Medicines': 'p_medicine',
-          'Other photographs': 'p_photo_other',
-          'Photographer': 'p_photographer',
-          'Photos & Videos on Urban Tribe': 'p_photo_ut',
-          'Photos on Social Media': 'p_photo_social',
-          'Videos on social media': 'p_video_social',
-          'Plasters': 'p_plasters',
-          'Playground Equipment': 'p_playground',
-          'Public Transport': 'p_transport',
-          'Safeguarding': 'p_safeguarding',
-          'Sharing information with other professionals': 'p_sharing',
-          'Suncream': 'p_suncream',
-          'Trips & Outings': 'p_trips'
-        };
-
-        for (const childId of selectedKidIds) {
-          const child = children.find(c => c.id === childId);
-          if (child) {
-            const newPermissions = { ...(child.metadata?.permissions || {}) };
-            Object.entries(selectedPermissionsAnswers).forEach(([label, value]) => {
-              const globalId = permMapping[label];
-              if (globalId) newPermissions[globalId] = value;
-            });
-            await updateChild(childId, { metadata: { ...(child.metadata || {}), permissions: newPermissions } });
-          }
+    } catch (error) {
+      console.error('Payment error detail:', error);
+      let errorMsg = error.message;
+      
+      // Try to extract the specific error from the function response
+      if (error.context) {
+        try {
+          const body = await error.context.json();
+          if (body.error) errorMsg = body.error;
+        } catch (e) {
+          console.error('Failed to parse error body:', e);
         }
       }
 
-      alert('Booking Successfully Confirmed!'); modal.remove(); initApp()
-    } catch (error) {
-      alert(error.message);
+      alert('Payment Error: ' + errorMsg);
       confirmBtn.disabled = false;
-      confirmBtn.textContent = 'Confirm & Pay'
+      confirmBtn.textContent = 'Confirm & Pay';
     }
   }
 }
@@ -3511,14 +3528,27 @@ async function loadProviderSummary(providerId) {
   try {
     const { data: acts } = await supabase.from('activities').select('id, name, photo_url, price_child, location_type').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(3);
     const actIds = acts.map(a => a.id);
-    const { data: bookings } = await supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name)').in('activity_id', actIds).order('created_at', { ascending: false }).limit(20);
+    const { data: bookings } = await supabase.from('invoices').select('*, activities(name, start_time, end_time), profiles:parent_id(full_name), children(name)').in('activity_id', actIds).order('created_at', { ascending: false }).limit(30);
+    
     const bookingGroups = {};
     bookings.forEach(inv => {
       const timeKey = new Date(inv.created_at).toISOString().substring(0, 16);
       const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
-      if (!bookingGroups[key]) bookingGroups[key] = { name: inv.activities?.name || 'Session', parent: inv.profiles?.full_name || 'Parent', date: inv.event_date, count: 0 };
-      bookingGroups[key].count++;
+      if (!bookingGroups[key]) {
+        bookingGroups[key] = { 
+          ...inv,
+          name: inv.activities?.name || 'Session', 
+          parent: inv.profiles?.full_name || 'Parent', 
+          date: inv.event_date,
+          startTime: inv.activities?.start_time,
+          endTime: inv.activities?.end_time,
+          items: [inv]
+        };
+      } else {
+        bookingGroups[key].items.push(inv);
+      }
     });
+
     const consolidatedBookings = Object.values(bookingGroups).slice(0, 5);
     const { data: comments } = await supabase.from('comments').select('*, profiles:user_id(full_name), activities(name)').in('activity_id', actIds).eq('status', 'pending').limit(5);
 
@@ -3531,12 +3561,51 @@ async function loadProviderSummary(providerId) {
             Upcoming Bookings
           </h3>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
-            ${consolidatedBookings.map(b => `
-              <div style="padding: 1rem; border-radius: 16px; background: #f0fdf4; border: 1px solid #dcfce7; transition: transform 0.2s;">
-                <p style="font-size: 1rem; font-weight: 800; margin: 0; color: #166534;">${b.name}</p>
-                <p style="font-size: 0.85rem; color: #15803d; margin: 6px 0 0 0; font-weight: 600;">${b.parent} • ${b.count} people • ${b.date}</p>
-              </div>
-            `).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
+            ${consolidatedBookings.map(g => {
+              const namesSet = new Set();
+              let totalAdults = 0;
+              let totalAmount = 0;
+              let isPaid = false;
+
+              g.items.forEach(item => {
+                if (item.children?.name) namesSet.add(item.children.name);
+                totalAdults += (item.adult_count || 0);
+                totalAmount += (item.amount || 0);
+                if (item.status === 'paid') isPaid = true;
+              });
+
+              const names = Array.from(namesSet);
+              if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
+              const namesHtml = names.map(n => `<span style="color: #10b981; font-weight: 800;">${n}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
+
+              return `
+                <div class="booking-card" style="position: relative; padding: 1.25rem; border-radius: 20px; border: 1px solid #f1f5f9; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--primary-color); transition: transform 0.2s;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                      <h4 style="font-weight: 900; color: #1e293b; font-size: 1.1rem; margin: 0 0 4px 0;">${g.name}</h4>
+                      <p style="font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.4;">
+                        ${namesHtml}
+                      </p>
+                    </div>
+                    <div style="text-align: right; min-width: 80px;">
+                      <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount.toFixed(2)}</p>
+                      <div style="display: inline-block; font-size: 0.6rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
+                        ${isPaid ? 'Paid' : 'Pending'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 0.75rem; font-weight: 700; background: #f8fafc; padding: 6px 12px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                      <span>🗓️</span> ${g.date}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 0.75rem; font-weight: 700; background: #f8fafc; padding: 6px 12px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                      <span>⏰</span> ${g.startTime || '00:00'} - ${g.endTime || '00:00'}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
           </div>
           <button onclick="document.getElementById('tab-prov-act').click()" class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff;">Manage Bookings</button>
         </div>
@@ -4926,7 +4995,7 @@ window.viewPermissionAnswers = (encAnswers, childName) => {
 
 // Social & Proximity Booking UI Functions
 window.joinFriendActivity = async (activity, date) => {
-  await openEnrollModal(activity);
+  await openEnrollModal(activity, date);
   const dateSelect = document.getElementById('enroll-date');
   if (dateSelect) {
     dateSelect.value = date;
@@ -5773,7 +5842,7 @@ async function loadAdminSummary() {
       supabase.from('activities').select('*, providers(business_name)').order('created_at', { ascending: false }).limit(5),
       supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
       supabase.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name)').order('created_at', { ascending: false }).limit(5)
+      supabase.from('invoices').select('*, activities(name, start_time, end_time), profiles:parent_id(full_name), children(name)').order('created_at', { ascending: false }).limit(20)
     ]);
 
     const users = usersRes.data || [];
@@ -5789,13 +5858,17 @@ async function loadAdminSummary() {
       const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
       if (!bookingGroups[key]) {
         bookingGroups[key] = {
+          ...inv,
           name: inv.activities?.name || 'Session',
           parent: inv.profiles?.full_name || 'Parent',
           date: inv.event_date,
-          count: 0
+          startTime: inv.activities?.start_time,
+          endTime: inv.activities?.end_time,
+          items: [inv]
         };
+      } else {
+        bookingGroups[key].items.push(inv);
       }
-      bookingGroups[key].count++;
     });
     const consolidatedBookings = Object.values(bookingGroups).slice(0, 5);
 
@@ -5832,12 +5905,51 @@ async function loadAdminSummary() {
             Upcoming Bookings
           </h3>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
-            ${consolidatedBookings.map(b => `
-              <div style="padding: 1rem; border-radius: 16px; background: #f0fdf4; border: 1px solid #dcfce7; transition: transform 0.2s;">
-                <p style="font-size: 1rem; font-weight: 800; margin: 0; color: #166534;">${b.name}</p>
-                <p style="font-size: 0.85rem; color: #15803d; margin: 6px 0 0 0; font-weight: 600;">${b.parent} • ${b.count} people • ${b.date}</p>
-              </div>
-            `).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
+            ${consolidatedBookings.map(g => {
+              const namesSet = new Set();
+              let totalAdults = 0;
+              let totalAmount = 0;
+              let isPaid = false;
+
+              g.items.forEach(item => {
+                if (item.children?.name) namesSet.add(item.children.name);
+                totalAdults += (item.adult_count || 0);
+                totalAmount += (item.amount || 0);
+                if (item.status === 'paid') isPaid = true;
+              });
+
+              const names = Array.from(namesSet);
+              if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
+              const namesHtml = names.map(n => `<span style="color: #10b981; font-weight: 800;">${n}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
+
+              return `
+                <div class="booking-card" style="position: relative; padding: 1rem; border-radius: 16px; border: 1px solid #f1f5f9; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--primary-color);">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <div style="flex: 1;">
+                      <h4 style="font-weight: 900; color: #1e293b; font-size: 0.95rem; margin: 0 0 2px 0;">${g.name}</h4>
+                      <p style="font-size: 0.75rem; color: #64748b; margin: 0; line-height: 1.3;">
+                        ${namesHtml}
+                      </p>
+                    </div>
+                    <div style="text-align: right; min-width: 70px;">
+                      <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 0.95rem;">£${totalAmount.toFixed(2)}</p>
+                      <div style="display: inline-block; font-size: 0.55rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 1px 6px; border-radius: 4px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 2px; text-transform: uppercase;">
+                        ${isPaid ? 'Paid' : 'Pending'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 0.7rem; font-weight: 700; background: #f8fafc; padding: 4px 8px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                      <span>🗓️</span> ${g.date}
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 0.7rem; font-weight: 700; background: #f8fafc; padding: 4px 8px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                      <span>⏰</span> ${g.startTime || '00:00'} - ${g.endTime || '00:00'}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
           </div>
           <button class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff; padding: 12px;" onclick="document.querySelector('[data-tab=invoices]').click()">Manage Bookings</button>
         </div>
