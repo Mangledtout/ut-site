@@ -2053,7 +2053,11 @@ window.handleVote = async (newsId, optionIdx) => {
   }
 };
 window.openEnrollModal = async (activity) => {
-  const [children, profile] = await Promise.all([getMyChildren(), getMyProfile().catch(() => ({}))]);
+  const [children, profile, providerPerms] = await Promise.all([
+    getMyChildren(), 
+    getMyProfile().catch(() => ({})),
+    getProviderPermissions(activity.provider_id).catch(() => [])
+  ]);
   const modal = document.getElementById('enroll-modal')
   const availableDates = activity.event_dates || (activity.recurrence ? [activity.recurrence] : ['TBD'])
   
@@ -2115,13 +2119,13 @@ window.openEnrollModal = async (activity) => {
         <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.9rem;">Where should we send your confirmation?</p>
         
         <div class="enroll-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">First name *</label><input type="text" id="c-fname" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
-          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Last name *</label><input type="text" id="c-lname" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
+          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">First name *</label><input type="text" id="c-fname" value="${profile.metadata?.first_name || ''}" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
+          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Last name *</label><input type="text" id="c-lname" value="${profile.metadata?.last_name || ''}" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
         </div>
-        <div class="form-group"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Email *</label><input type="email" id="c-email" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
+        <div class="form-group"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Email *</label><input type="email" id="c-email" value="${profile.email || ''}" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
         <div class="enroll-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Mobile number *</label><input type="tel" id="c-phone" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
-          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Postcode *</label><input type="text" id="c-postcode" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
+          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Mobile number *</label><input type="tel" id="c-phone" value="${profile.phone || ''}" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
+          <div class="form-group" style="margin:0"><label style="font-size:0.75rem; font-weight:700; color:#1e293b; text-transform:uppercase;">Postcode *</label><input type="text" id="c-postcode" value="${profile.metadata?.postcode || ''}" required style="padding:0.75rem; border-radius:10px; border:1px solid #e2e8f0;"></div>
         </div>
         
         <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
@@ -2377,10 +2381,12 @@ window.openEnrollModal = async (activity) => {
       container.innerHTML = activity.required_permissions.map((p, i) => {
         const globalId = permMapping[p];
         const globalVal = globalId ? globalPerms[globalId] : null;
+        const fullPerm = providerPerms.find(fp => fp.label === p);
         
         return `
           <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; position: relative;">
             <p style="font-weight: 700; color: #1e293b; margin-bottom: 4px; font-size: 0.95rem;">${p}</p>
+            ${fullPerm ? `<p style="font-size: 0.8rem; color: #64748b; margin-bottom: 12px; line-height: 1.4;">${fullPerm.description}</p>` : ''}
             ${globalVal ? `<p style="font-size: 0.7rem; color: #059669; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 4px;">✨ Pre-filled from ${firstChild.name}'s profile</p>` : '<div style="height: 10px;"></div>'}
             <div style="display: flex; gap: 20px;">
               <label style="display: flex; align-items: center; gap: 8px; font-size: 0.9rem; cursor: pointer; color: #166534; font-weight: 600;">
@@ -2467,20 +2473,36 @@ window.openEnrollModal = async (activity) => {
     confirmBtn.disabled = true; confirmBtn.textContent = 'Processing...'
     
     try {
+      const { data: { user } } = await supabase.auth.getUser()
       const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value)
       const adultCount = parseInt(adultCountSelect.value)
       const adultNames = adultInputs.map(input => input.value.trim())
       
-      for (const kidId of selectedKidIds) { await enrollChild(kidId, activity.id, activity.price_child, eventDate) }
-      if (adultCount > 0 || selectedKidIds.length > 0) {
-        const { data: { user } } = await supabase.auth.getUser()
-        const { error } = await supabase.from('invoices').insert([{ 
-          parent_id: user.id, activity_id: activity.id, 
-          amount: (selectedKidIds.length * activity.price_child) + (adultCount * activity.price_adult), 
-          status: 'unpaid', adult_count: adultCount, adult_attendees: adultNames, 
-          event_date: eventDate, metadata: contact 
-        }])
-        if (error) throw error
+      // Create child enrollments
+      for (const kidId of selectedKidIds) { 
+        await enrollChild({
+          parent_id: user.id,
+          activity_id: activity.id,
+          child_id: kidId,
+          amount: activity.price_child,
+          status: 'unpaid',
+          event_date: eventDate,
+          metadata: contact
+        });
+      }
+
+      // Create adult enrollment if any
+      if (adultCount > 0) {
+        await supabase.from('invoices').insert([{ 
+          parent_id: user.id, 
+          activity_id: activity.id, 
+          amount: adultCount * activity.price_adult, 
+          status: 'unpaid', 
+          adult_count: adultCount, 
+          adult_attendees: adultNames, 
+          event_date: eventDate, 
+          metadata: contact 
+        }]);
       }
 
       // Sync permissions back to child metadata for consistency
@@ -3962,9 +3984,12 @@ async function renderAddActivityForm(providerId, activity = null) {
             <p style="font-weight: 700; color: #1e293b; margin-bottom: 1rem; font-size: 0.9rem;">Select Required Permissions:</p>
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
               ${perms.map(p => `
-                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.9rem; cursor: pointer; padding: 0.5rem; background: #fff; border-radius: 8px; border: 1px solid #f1f5f9;">
-                  <input type="checkbox" name="req-p" value="${p.label}" ${isEdit && activity.required_permissions?.includes(p.label) ? 'checked' : ''} style="width: 18px; height: 18px;">
-                  ${p.label}
+                <label style="display: flex; flex-direction: column; gap: 4px; padding: 0.75rem; background: #fff; border-radius: 12px; border: 1px solid #f1f5f9; cursor: pointer;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="req-p" value="${p.label}" ${isEdit && activity.required_permissions?.includes(p.label) ? 'checked' : ''} style="width: 18px; height: 18px;">
+                    <span style="font-weight: 700; color: #1e293b;">${p.label}</span>
+                  </div>
+                  <p style="margin: 0 0 0 28px; font-size: 0.75rem; color: #64748b; line-height: 1.3;">${p.description}</p>
                 </label>
               `).join('')}
             </div>
@@ -4076,19 +4101,31 @@ async function renderMyProfile() {
         <form id="profile-form">
           <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
           <h3 style="font-size: 0.9rem; font-weight: 800; color: #1e293b; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem;">Personal Information</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="p-first-name" value="${profile.metadata?.first_name || ''}" placeholder="John">
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="p-last-name" value="${profile.metadata?.last_name || ''}" placeholder="Doe">
+            </div>
+          </div>
           <div class="form-group">
-            <label>Full Name</label>
+            <label>Full Display Name</label>
             <input type="text" id="p-name" value="${profile.full_name || ''}" required>
           </div>
           <div class="form-group">
-            <label>Phone Number</label>
-            <input type="tel" id="p-phone" value="${profile.phone || ''}">
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">For contact purposes</p>
+            <label>Mobile Number</label>
+            <input type="tel" id="p-phone" value="${profile.phone || ''}" placeholder="07123 456789">
           </div>
           <div class="form-group">
-            <label>Contact Email</label>
-            <input type="email" id="p-email" value="${profile.email || ''}">
-            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">For contact purposes (does not change login email)</p>
+            <label>Email Address</label>
+            <input type="email" id="p-email" value="${profile.email || ''}" placeholder="john@example.com">
+          </div>
+          <div class="form-group">
+            <label>Postcode</label>
+            <input type="text" id="p-postcode" value="${profile.metadata?.postcode || ''}" placeholder="SW1A 1AA">
           </div>
           <button type="submit" id="save-profile-btn" class="btn btn-primary">Save Profile</button>
         </form>
@@ -4205,11 +4242,19 @@ async function renderMyProfile() {
         }
       }
       
+      const updatedMetadata = {
+        ...(profile.metadata || {}),
+        first_name: document.getElementById('p-first-name').value,
+        last_name: document.getElementById('p-last-name').value,
+        postcode: document.getElementById('p-postcode').value
+      };
+      
       await updateMyProfile({
         full_name: document.getElementById('p-name').value,
         phone: document.getElementById('p-phone').value,
         email: document.getElementById('p-email').value,
-        photo_url: photoUrl
+        photo_url: photoUrl,
+        metadata: updatedMetadata
       });
       alert('Profile updated successfully!');
       initApp();
