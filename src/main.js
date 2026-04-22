@@ -1775,7 +1775,7 @@ async function renderDashboard(user) {
           <div style="min-width: 280px; background: #f8fafc; padding: 1.5rem; border-radius: 20px; border: 2px dashed #e2e8f0; text-align: center;">
             <p style="font-size: 1.5rem; margin-bottom: 0.5rem;">👋</p>
             <p style="font-size: 0.85rem; color: #64748b; font-weight: 600;">No friend updates yet.</p>
-            <button onclick="window.renderFriendsTab()" style="margin-top: 10px; background: none; border: none; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Add friends to start</button>
+            <button onclick="window.renderFriendsTab()" style="margin-top: 10px; background: none; border: none; color: var(--primary-color); font-weight: 700; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">Connect with others to start</button>
           </div>
         `;
         return;
@@ -3435,7 +3435,7 @@ window.handleEditBooking = async (enrollments) => {
           <div style="background: #f8fafc; padding: 1.25rem; border-radius: 16px; border: 1px solid #f1f5f9;">
             <p style="font-weight: 800; color: var(--primary-color); margin-bottom: 12px; font-size: 0.95rem;">${e.children?.name || e.profiles?.full_name || 'Child ' + (idx + 1)}</p>
             ${(activity.required_permissions || []).map(pLabel => {
-              const currentVal = e.permissions_answers?.[pLabel] || 'No';
+              const currentVal = e.metadata?.permissions?.[pLabel] || 'No';
               return `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: #fff; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0;">
                   <span style="font-size: 0.85rem; font-weight: 600; color: #334155;">${pLabel}</span>
@@ -3477,13 +3477,17 @@ window.handleEditBooking = async (enrollments) => {
     const btn = document.getElementById('edit-booking-save');
     btn.disabled = true; btn.textContent = 'Updating...';
     try {
-      for (const e of enrollments) {
+      const updates = enrollments.map(e => {
         const newAnswers = {};
         (activity.required_permissions || []).forEach(pLabel => {
           newAnswers[pLabel] = document.getElementById(`ans-${e.id}-${pLabel}`).value;
         });
-        await updateInvoice(e.id, { permissions_answers: newAnswers });
-      }
+        const newMetadata = { ...(e.metadata || {}), permissions: newAnswers };
+        return updateInvoice(e.id, { metadata: newMetadata });
+      });
+      
+      await Promise.all(updates);
+      alert('Booking updated successfully! 🎉');
       modal.remove();
       initApp();
     } catch (err) {
@@ -4821,7 +4825,7 @@ window.renderFriendsTab = async () => {
               </div>
               <span style="font-weight: 700; color: #1e293b;">${p.full_name}</span>
             </div>
-            <button onclick="window.handleSendFriendRequest('${p.id}', this)" class="btn btn-primary" style="width: auto; padding: 6px 16px; font-size: 0.75rem;">Add Friend</button>
+            <button onclick="window.handleSendFriendRequest('${p.id}', this)" class="btn btn-primary" style="width: auto; padding: 6px 16px; font-size: 0.75rem;">Connect</button>
           </div>
         `).join('');
       }
@@ -4854,7 +4858,7 @@ window.handleSendFriendRequest = async (parentId, btn) => {
   } catch (err) {
     alert('Error: ' + err.message);
     btn.disabled = false;
-    btn.textContent = 'Add Friend';
+    btn.textContent = 'Connect';
   }
 }
 
@@ -4876,7 +4880,7 @@ window.renderQRModal = (userId) => {
       <button onclick="this.closest('.cropper-modal-overlay').remove()" class="btn btn-primary" style="width: 100%; padding: 1rem; border-radius: 16px; font-weight: 800;">Close</button>
       
       <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #f1f5f9;">
-        <button onclick="alert('Scanner placeholder: In a real app, this would open the camera.')" style="background: none; border: none; color: var(--primary-color); font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
+        <button onclick="window.renderQRScannerModal()" style="background: none; border: none; color: var(--primary-color); font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px; justify-content: center; width: 100%;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
@@ -4887,6 +4891,79 @@ window.renderQRModal = (userId) => {
     </div>
   `;
   document.body.appendChild(modal);
+}
+
+window.renderQRScannerModal = async () => {
+  // 1. Ensure scanner library is loaded
+  if (typeof Html5Qrcode === 'undefined') {
+    const script = document.createElement('script');
+    script.src = "https://unpkg.com/html5-qrcode";
+    script.onload = () => window.renderQRScannerModal();
+    document.head.appendChild(script);
+    return;
+  }
+
+  const modal = document.createElement('div');
+  modal.className = 'cropper-modal-overlay';
+  modal.style.display = 'flex';
+  modal.style.zIndex = '3000';
+  modal.style.padding = '1rem';
+  
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 500px; width: 100%; background: #fff; border-radius: 24px; padding: 1.5rem; text-align: center; position: relative;">
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem;">Scan QR Code</h2>
+      <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 1.5rem;">Point your camera at another parent's QR code.</p>
+      
+      <div id="reader" style="width: 100%; overflow: hidden; border-radius: 16px; background: #f1f5f9; min-height: 250px; border: 1px solid #e2e8f0;"></div>
+      
+      <div id="scanner-result" style="margin-top: 1rem; font-weight: 700; color: var(--primary-color);"></div>
+
+      <button id="close-scanner" class="btn btn-outline" style="margin-top: 1.5rem; width: 100%;">Cancel</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const html5QrCode = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+  const onScanSuccess = async (decodedText) => {
+    console.log(`Code scanned = ${decodedText}`);
+    // Check if it's an Urban Tribe connect link
+    if (decodedText.startsWith('urban-tribe://connect/')) {
+      const targetUserId = decodedText.split('/').pop();
+      document.getElementById('scanner-result').innerHTML = "✨ Connection found! Processing...";
+      
+      try {
+        await html5QrCode.stop();
+        await sendFriendRequest(targetUserId);
+        alert('Connection request sent! 🎉');
+        modal.remove();
+        window.renderFriendsTab();
+      } catch (err) {
+        document.getElementById('scanner-result').innerHTML = "❌ Error: " + err.message;
+        console.error(err);
+      }
+    } else {
+      document.getElementById('scanner-result').innerHTML = "⚠️ Not a valid Urban Tribe code.";
+    }
+  };
+
+  try {
+    await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess);
+  } catch (err) {
+    console.error("Camera error:", err);
+    document.getElementById('reader').innerHTML = `
+      <div style="padding: 2rem; color: #ef4444; font-size: 0.9rem;">
+        <p><strong>Camera Access Denied</strong></p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">Please ensure you have granted camera permissions in your browser settings and that you are using HTTPS.</p>
+      </div>
+    `;
+  }
+
+  document.getElementById('close-scanner').onclick = async () => {
+    try { await html5QrCode.stop(); } catch(e) {}
+    modal.remove();
+  };
 }
 window.toggleConnectionAccordion = (parentId) => {
   const el = document.getElementById(`acc-${parentId}`);
