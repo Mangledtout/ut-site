@@ -65,3 +65,18 @@ ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 -- Basic Policies (Everyone can read their own data - simplified for now)
 CREATE POLICY "Public profiles are viewable by everyone." ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update their own profiles." ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- 10. Waiting List
+CREATE TABLE waiting_list (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  activity_id UUID REFERENCES activities(id) ON DELETE CASCADE,
+  event_date DATE NOT NULL,
+  parent_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  metadata JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE waiting_list ENABLE ROW LEVEL SECURITY;
+CREATE POLICY " Users can view their own waitlist entries.\ ON waiting_list FOR SELECT USING (auth.uid() = parent_id);
+CREATE POLICY \Users can add themselves to waitlist.\ ON waiting_list FOR INSERT WITH CHECK (auth.uid() = parent_id);
+

@@ -116,7 +116,13 @@ export const fetchAllProviders = async () => {
 
 // --- ACTIVITIES ---
 export const getActivities = async () => {
-  const { data, error } = await supabase.from('activities').select('*');
+  const { data, error } = await supabase.from('activities').select('*, providers(business_name), activity_likes(user_id), comments(id)');
+  if (error) throw error;
+  return data;
+}
+
+export const getAllBookings = async () => {
+  const { data, error } = await supabase.from('invoices').select('activity_id, event_date, child_id, adult_count, status');
   if (error) throw error;
   return data;
 }
@@ -462,6 +468,16 @@ export const deleteComment = async (id) => {
 }
 
 
+export const deleteThread = async (type, id, threadId) => {
+  const column = type === 'activity' ? 'activity_id' : 'news_id';
+  let query = supabase.from('comments').delete().eq(column, id);
+  if (threadId) {
+    query = query.or(`id.eq.${threadId},parent_id.eq.${threadId}`);
+  }
+  const { error } = await query;
+  if (error) throw error;
+}
+
 // --- ADMIN FUNCTIONS ---
 export const adminGetStats = async () => {
   const { count: users } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
@@ -563,6 +579,8 @@ export const deleteProviderPermission = async (id) => {
 export const sendFriendRequest = async (parentId) => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
+  if (!user) throw new Error('Not authenticated');
+  if (user.id === parentId) throw new Error('You cannot connect with yourself');
   const { error } = await supabase.from('parent_connections').insert([{ requester_id: user.id, receiver_id: parentId, status: 'pending' }]);
   if (error) throw error;
 }
@@ -625,9 +643,18 @@ export const updateSharingPreference = async (enabled) => {
 }
 
 export const searchProfiles = async (query) => {
-  const { data, error } = await supabase.from('profiles').select('id, full_name, photo_url').ilike('full_name', `%${query}%`).limit(5);
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, photo_url, metadata')
+    .ilike('full_name', `%${query}%`)
+    .neq('id', user?.id)
+    .limit(10);
   if (error) throw error;
-  return data;
+  
+  // Filter in JS to handle null metadata and the 'discoverable' flag
+  return data.filter(p => p.metadata?.discoverable !== 'no').slice(0, 5);
 }
 
 export const getAllParentFriendships = async () => {
@@ -648,6 +675,42 @@ export const getAllParentFriendships = async () => {
 export const submitInterestRegistration = async (data) => {
   const { error } = await supabase.from('interest_submissions').insert([data]);
   if (error) throw error;
+}
+
+// --- WAITING LIST ---
+export const addToWaitingList = async (data) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) throw new Error('Not authenticated');
+  
+  // Calculate next position for waitlist
+  const { count } = await supabase
+    .from('waitlist')
+    .select('id', { count: 'exact', head: true })
+    .eq('activity_id', data.activity_id)
+    .eq('event_date', data.event_date);
+  
+  const position = (count || 0) + 1;
+  const { error } = await supabase.from('waitlist').insert([{ 
+    ...data, 
+    parent_id: user.id,
+    position: position,
+    status: 'waiting'
+  }]);
+  if (error) throw error;
+}
+
+export const getMyWaitingList = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from('waitlist')
+    .select('*, activities(name)')
+    .eq('parent_id', user.id)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
 }
 
 export const adminGetNewsletterSignups = async () => {
