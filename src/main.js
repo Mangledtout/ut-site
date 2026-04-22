@@ -128,30 +128,29 @@ function renderBottomNav(activeTab, profile = null) {
 function renderProviderBottomNav(activeTab) {
   return `
     <nav class="bottom-nav">
+      <button class="nav-item ${activeTab === 'dash' ? 'active' : ''}" id="tab-prov-dash">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
+        </svg>
+        Dash
+      </button>
       <button class="nav-item ${activeTab === 'act' ? 'active' : ''}" id="tab-prov-act">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25" />
         </svg>
-        Activities
+        Clubs
       </button>
       <button class="nav-item ${activeTab === 'news' ? 'active' : ''}" id="tab-prov-news">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5" />
         </svg>
         News
-      </button>
-      <button class="nav-item ${activeTab === 'messages' ? 'active' : ''}" id="tab-prov-messages" style="position: relative;">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.028Z" />
-        </svg>
-        Messages
-        <div id="msg-badge-prov" style="display: none; position: absolute; top: 4px; right: 20%; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; min-width: 16px; height: 16px; border-radius: 8px; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid #fff;"></div>
       </button>
       <button class="nav-item ${activeTab === 'others' ? 'active' : ''}" id="tab-prov-others">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 2px;">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
         </svg>
-        Others
+        More
       </button>
     </nav>
   `;
@@ -2978,7 +2977,27 @@ async function renderProviderDashboard() {
     app.innerHTML = `<div class="container" style="padding-bottom: 80px; padding-top: 0;">
       <header style="display: flex; justify-content: center; align-items: center; margin-top: 0; padding-top: 5px;"><img src="${logo}" alt="Urban Tribe" style="height: 40px;"></header>
       <main class="mt-4">
-        <div id="prov-act-content">
+        
+        <!-- DASHBOARD / OVERVIEW TAB -->
+        <div id="prov-dash-content">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem;">
+            <div class="card" style="text-align: center; padding: 12px 5px; border-radius: 16px; background: #fff; border: 1px solid #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <p style="font-size: 0.65rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Users</p>
+              <p id="p-stat-users" style="font-size: 1.25rem; font-weight: 800; color: var(--primary-color); margin: 0;">-</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 12px 5px; border-radius: 16px; background: #fff; border: 1px solid #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <p style="font-size: 0.65rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Clubs</p>
+              <p id="p-stat-acts" style="font-size: 1.25rem; font-weight: 800; color: #8b5cf6; margin: 0;">-</p>
+            </div>
+            <div class="card" style="text-align: center; padding: 12px 5px; border-radius: 16px; background: #fff; border: 1px solid #f1f5f9; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <p style="font-size: 0.65rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Bookings</p>
+              <p id="p-stat-bookings" style="font-size: 1.25rem; font-weight: 800; color: #10b981; margin: 0;">-</p>
+            </div>
+          </div>
+          <p style="text-align:center; padding: 2rem; color: #64748b;">Loading summary...</p>
+        </div>
+
+        <div id="prov-act-content" style="display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;"><h2 style="font-size: 1.1rem; margin: 0;">My Activities</h2><button id="a-act" class="btn btn-primary" style="width: auto; padding: 4px 12px; font-size: 0.8rem; min-height: unset; height: 32px;">+ Add Activity</button></div>
           <div id="my-a-list">Loading...</div>
         </div>
@@ -2993,7 +3012,7 @@ async function renderProviderDashboard() {
           <div id="my-news-list">Loading...</div>
         </div>
         
-        <!-- NEW OTHERS TAB CONTENT -->
+        <!-- OTHERS TAB CONTENT -->
         <div id="prov-others-content" style="display: none;">
           <h2 style="margin-bottom: 1.5rem;">More Options</h2>
           <div style="display: grid; gap: 1rem;">
@@ -3026,10 +3045,6 @@ async function renderProviderDashboard() {
                 <p style="margin: 0; font-size: 0.85rem; color: #64748b;">Plan your outdoor activities</p>
               </div>
             </div>
-
-
-
-
 
             <div class="card" onclick="window.renderMyProfile()" style="cursor: pointer; display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
               <div style="background: #fdf2f8; color: #ec4899; padding: 10px; border-radius: 12px;">
@@ -3081,170 +3096,106 @@ async function renderProviderDashboard() {
           </div>
         </div>
       </div>
-
-
     </main>
-    ${renderProviderBottomNav('act')}
+    ${renderProviderBottomNav('dash')}
   `;
-  document.getElementById('a-act').onclick = () => renderAddActivityForm(provider.id); 
-  document.getElementById('a-news').onclick = () => renderAddNewsForm(provider.id);
-  document.getElementById('a-poll').onclick = () => renderAddPollForm(provider.id);
-  
-  const hideAllProvContent = () => {
-    ['prov-act-content', 'prov-news-content', 'prov-messages-content', 'prov-set-content', 'prov-perms-content', 'prov-weather-content', 'prov-others-content'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  };
+    document.getElementById('a-act').onclick = () => renderAddActivityForm(provider.id); 
+    document.getElementById('a-news').onclick = () => renderAddNewsForm(provider.id);
+    document.getElementById('a-poll').onclick = () => renderAddPollForm(provider.id);
+    
+    const hideAllProvContent = () => {
+      ['prov-dash-content', 'prov-act-content', 'prov-news-content', 'prov-messages-content', 'prov-set-content', 'prov-perms-content', 'prov-weather-content', 'prov-others-content'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    };
 
-  document.getElementById('tab-prov-act').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-act-content').style.display = 'block'; }
-  document.getElementById('tab-prov-news').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-news-content').style.display = 'block'; }
-  document.getElementById('tab-prov-messages').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); renderMessagesTab(); }
-  document.getElementById('tab-prov-others').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-others-content').style.display = 'block'; }
-  
-  // Others Sub-Buttons
-  document.getElementById('btn-others-settings').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-set-content').style.display = 'block'; }
-  document.getElementById('btn-others-perms').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-perms-content').style.display = 'block'; }
-  document.getElementById('btn-others-weather').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-weather-content').style.display = 'block'; }
-
-
-  
-  document.getElementById('get-weather-btn').onclick = async () => {
-    const loc = document.getElementById('weather-location').value.trim();
-    if (!loc) return alert('Please enter a location');
-    await handleFetchWeather(loc);
-  };
-  
-  document.getElementById('weather-location').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      document.getElementById('get-weather-btn').click();
+    document.getElementById('tab-prov-dash').onclick = (e) => { 
+      hideAllProvContent(); 
+      e.currentTarget.classList.add('active'); 
+      document.getElementById('prov-dash-content').style.display = 'block'; 
+      loadProviderSummary(provider.id);
     }
-  });
-  
-  document.getElementById('prov-settings-form').onsubmit = async (e) => { 
-    e.preventDefault(); 
-    const btn = document.getElementById('save-prov-btn'); 
-    const prevText = btn.textContent;
-    btn.disabled = true; 
-    btn.textContent = 'Saving (v2)...'; 
-    try { 
-      console.log('Starting updateProvider call...');
-      await updateProvider(provider.id, { business_name: document.getElementById('prov-name').value, terms_and_conditions: document.getElementById('prov-terms').value }); 
-      console.log('updateProvider call finished.');
-      btn.textContent = 'Settings Updated!';
-      btn.style.backgroundColor = '#10b981';
-      setTimeout(() => { btn.disabled = false; btn.textContent = prevText; btn.style.backgroundColor = ''; }, 2000);
-    } catch(err) { 
-      console.error('Catch block reached!', err);
-      btn.textContent = 'Error! See console.';
-      btn.style.backgroundColor = '#ef4444';
-      if (err?.code === '42703') {
-        alert('Lütfen Supabase veritabanında "terms_and_conditions" sütununu eklediğinizden emin olun:\n\nALTER TABLE providers ADD COLUMN terms_and_conditions TEXT;');
-      } else {
+    document.getElementById('tab-prov-act').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-act-content').style.display = 'block'; }
+    document.getElementById('tab-prov-news').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-news-content').style.display = 'block'; }
+    document.getElementById('tab-prov-others').onclick = (e) => { hideAllProvContent(); e.currentTarget.classList.add('active'); document.getElementById('prov-others-content').style.display = 'block'; }
+    
+    // Others Sub-Buttons
+    document.getElementById('btn-others-settings').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-set-content').style.display = 'block'; }
+    document.getElementById('btn-others-perms').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-perms-content').style.display = 'block'; }
+    document.getElementById('btn-others-weather').onclick = () => { hideAllProvContent(); document.getElementById('tab-prov-others').classList.add('active'); document.getElementById('prov-weather-content').style.display = 'block'; }
+
+    document.getElementById('get-weather-btn').onclick = async () => {
+      const loc = document.getElementById('weather-location').value.trim();
+      if (!loc) return alert('Please enter a location');
+      await handleFetchWeather(loc);
+    };
+    
+    document.getElementById('prov-settings-form').onsubmit = async (e) => { 
+      e.preventDefault(); 
+      const btn = document.getElementById('save-prov-btn'); 
+      const prevText = btn.textContent;
+      btn.disabled = true; 
+      btn.textContent = 'Saving...'; 
+      try { 
+        await updateProvider(provider.id, { business_name: document.getElementById('prov-name').value, terms_and_conditions: document.getElementById('prov-terms').value }); 
+        btn.textContent = 'Settings Updated!';
+        btn.style.backgroundColor = '#10b981';
+        setTimeout(() => { btn.disabled = false; btn.textContent = prevText; btn.style.backgroundColor = ''; }, 2000);
+      } catch(err) { 
+        btn.textContent = 'Error!';
+        btn.style.backgroundColor = '#ef4444';
         alert('Failed to save: ' + (err?.message || 'Unknown error')); 
-      }
-      setTimeout(() => { btn.disabled = false; btn.textContent = prevText; btn.style.backgroundColor = ''; }, 3000);
-    } 
-  }
+        setTimeout(() => { btn.disabled = false; btn.textContent = prevText; btn.style.backgroundColor = ''; }, 3000);
+      } 
+    }
 
-  const myActs = await getProviderActivities(provider.id);
-  document.getElementById('my-a-list').innerHTML = myActs.length ? myActs.map(a => `
-    <div class="card" style="padding: 1.25rem; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
-      <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-        <div style="position: relative; width: 70px; height: 70px; flex-shrink: 0;">
-          ${a.photo_url ? `<img src="${a.photo_url}" onclick='window.handleViewActivitySocial(${JSON.stringify(a).replace(/'/g, "&apos;")})' style="width: 100%; height: 100%; border-radius: 14px; object-fit: cover; cursor: pointer; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 100%; height: 100%; background: #f1f5f9; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 1.5rem;">📷</div>`}
-          ${a.status === 'draft' ? '<span style="position: absolute; top: -5px; right: -5px; font-size: 0.55rem; background: #f1f5f9; color: #64748b; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 800;">DRAFT</span>' : ''}
-        </div>
-        <div style="flex: 1; min-width: 0;">
-          <h3 onclick='window.handleViewActivitySocial(${JSON.stringify(a).replace(/'/g, "&apos;")})' style="font-weight: 800; color: #1e293b; margin: 0; cursor: pointer; font-size: 1.15rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${a.name}</h3>
-          <div style="display: flex; gap: 8px; align-items: center; margin-top: 6px; flex-wrap: wrap;">
-            <span style="font-size: 0.75rem; background: #f8fafc; color: #64748b; padding: 4px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600;">£${a.price_child} <span style="font-weight: 400; opacity: 0.7;">Child</span></span>
-            <span style="font-size: 0.75rem; background: #f8fafc; color: #64748b; padding: 4px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600;">📍 ${a.location_type}</span>
+    loadProviderStats(provider.id);
+    document.getElementById('tab-prov-dash').click();
+
+    const myActs = await getProviderActivities(provider.id);
+    document.getElementById('my-a-list').innerHTML = myActs.length ? myActs.map(a => `
+      <div class="card" style="padding: 1.25rem; margin-bottom: 1rem; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid #f1f5f9;">
+        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+          <div style="position: relative; width: 70px; height: 70px; flex-shrink: 0;">
+            ${a.photo_url ? `<img src="${a.photo_url}" onclick='window.handleViewActivitySocial(${JSON.stringify(a).replace(/'/g, "&apos;")})' style="width: 100%; height: 100%; border-radius: 14px; object-fit: cover; cursor: pointer; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">` : `<div style="width: 100%; height: 100%; background: #f1f5f9; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; font-size: 1.5rem;">📷</div>`}
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <h3 style="font-weight: 800; color: #1e293b; margin: 0; font-size: 1.15rem;">${a.name}</h3>
+            <p style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">£${a.price_child} • ${a.location_type}</p>
           </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
-          <button id="like-prov-act-${a.id}" onclick='window.handleToggleActivityLike("${a.id}", "like-prov-act-${a.id}", "count-prov-act-${a.id}", "reactors-prov-act-${a.id}")' data-liked="${a.activity_likes?.some(l => l.user_id === user?.id) || false}" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px; transition: transform 0.2s;">
-            ${a.activity_likes?.some(l => l.user_id === user?.id) ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #ef4444;"><path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px; color: #cbd5e1;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>`}
-            <span id="count-prov-act-${a.id}" style="font-size: 0.8rem; color: #94a3b8; font-weight: 700;">${a.activity_likes?.length || 0}</span>
-          </button>
+        <div style="display: flex; gap: 8px;">
+          <button onclick='window.handleViewActivityBookings(${JSON.stringify(a).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.8rem;">Bookings</button>
+          <button onclick='window.handleEditActivity(${JSON.stringify(a).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; font-size: 0.8rem;">Edit</button>
         </div>
       </div>
-      <div style="display: flex; gap: 8px; border-top: 1px solid #f8fafc; padding-top: 1rem;">
-        <button onclick='window.handleViewActivityBookings(${JSON.stringify(a).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 12px; font-weight: 700; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Bookings</button>
-        <button onclick='window.handleEditActivity(${JSON.stringify(a).replace(/'/g, "&apos;")})' class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.85rem; border-radius: 12px; font-weight: 700; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">Edit</button>
-      </div>
-      <div id="reactors-prov-act-${a.id}" style="padding: 0; margin-top: 8px;">${formatReactors(a.activity_likes, user?.id)}</div>
-    </div>
-  `).join('') : '<p>No activities yet.</p>'
+    `).join('') : '<p>No activities yet.</p>';
 
-  try {
     const newsData = await getProviderNews(provider.id);
-    document.getElementById('my-news-list').innerHTML = newsData.length ? newsData.map(n => {
-      const isPoll = n.type === 'poll';
-      const options = n.metadata?.options || [];
-      const votes = n.comments?.filter(v => v.content?.startsWith('[VOTE:')) || [];
-      return `
-      <div class="card" style="padding: 12px 1rem; margin-bottom: 4px; display: flex; flex-direction: column; gap: 10px; border-radius: 16px;">
-        <!-- Top Row: Title and Like -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1;">
-            <p onclick='window.handleViewNewsSocial(${JSON.stringify(n).replace(/'/g, "&apos;")})' style="font-weight: 800; color: var(--primary-color); text-decoration: underline; margin: 0; cursor: pointer; font-size: 1.05rem; line-height: 1.2;">${n.title}</p>
-            ${isPoll ? '<span style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: bold;">POLL</span>' : ''}
-            ${n.status === 'draft' ? '<span style="font-size: 0.6rem; background: #f1f5f9; color: #64748b; padding: 2px 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-weight: bold; flex-shrink: 0;">DRAFT</span>' : ''}
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <button id="like-prov-news-${n.id}" onclick='window.handleToggleNewsLike("${n.id}", "like-prov-news-${n.id}", "count-prov-news-${n.id}", "reactors-prov-news-${n.id}")' data-liked="${n.news_likes?.some(l => l.user_id === user?.id) || false}" style="background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 10px; transition: all 0.2s;">
-              ${n.news_likes?.some(l => l.user_id === user?.id) ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px; color: #ef4444;"><path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" /></svg>` : `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px; color: #64748b;"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" /></svg>`}
-              <span id="count-prov-news-${n.id}" style="font-size: 0.8rem; color: #1e293b; font-weight: 700;">${n.news_likes?.length || 0}</span>
-            </button>
-            <button onclick='window.handleViewNewsSocial(${JSON.stringify(n).replace(/'/g, "&apos;")})' style="background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 10px; transition: all 0.2s;">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px; color: #64748b;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.028Z" />
-              </svg>
-              <span style="font-size: 0.8rem; color: #1e293b; font-weight: 700;">${n.comments?.length || 0}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Bottom Row: Image, Info and Actions -->
+    document.getElementById('my-news-list').innerHTML = newsData.length ? newsData.map(n => `
+      <div class="card" style="padding: 12px 1rem; margin-bottom: 4px; border-radius: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            ${n.photo_url ? `<img src="${n.photo_url}" onclick='window.handleViewNewsSocial(${JSON.stringify(n).replace(/'/g, "&apos;")})' style="width: 50px; height: 35px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1px solid #f1f5f9;">` : `<div style="width: 50px; height: 35px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;"></div>`}
-            <div>
-              <p style="font-size: 0.75rem; font-weight: 600; color: #64748b; margin: 0;">${new Date(n.created_at).toLocaleDateString()}</p>
-            </div>
-          </div>
-          <div style="display: flex; gap: 6px;">
-            ${isPoll ? `<button onclick="window.togglePollDetailsAccordion('${n.id}')" class="btn btn-outline" style="width: auto; padding: 6px 12px; font-size: 0.75rem; border-radius: 10px; font-weight: 700; background: #fff; color: #8b5cf6; border-color: #ddd6fe;">Results</button>` : ''}
-            <button onclick='window.handleEditNews(${JSON.stringify(n).replace(/'/g, "&apos;")})' class="btn btn-outline" style="width: auto; padding: 6px 12px; font-size: 0.75rem; border-radius: 10px; font-weight: 700; background: #fff;">Edit</button>
-          </div>
+          <p style="font-weight: 800; color: var(--primary-color); margin: 0;">${n.title}</p>
+          <button onclick='window.handleEditNews(${JSON.stringify(n).replace(/'/g, "&apos;")})' class="btn btn-outline" style="width: auto; padding: 4px 10px; font-size: 0.7rem;">Edit</button>
         </div>
-
-        ${isPoll ? `
-          <div id="poll-details-${n.id}" style="display: none; background: #f8fafc; border-radius: 12px; padding: 1rem; border: 1px solid #f1f5f9; margin-top: 5px;">
-            ${options.map((opt, idx) => {
-              const optVotes = votes.filter(v => v.content === `[VOTE:${idx}]`);
-              return `
-                <div style="margin-bottom: 12px;">
-                  <p style="font-size: 0.8rem; font-weight: 800; color: #334155; margin-bottom: 4px;">${opt} (${optVotes.length} votes)</p>
-                  <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                    ${optVotes.map(v => `<span style="font-size: 0.65rem; background: #fff; color: #64748b; padding: 2px 8px; border-radius: 20px; border: 1px solid #e2e8f0;">${v.profiles?.full_name || 'Anonymous'}</span>`).join('') || '<span style="font-size: 0.65rem; color: #94a3b8; font-style: italic;">No votes</span>'}
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        ` : ''}
-
-        <div id="reactors-prov-news-${n.id}" style="padding: 0; margin-top: -4px;">${formatReactors(n.news_likes, user?.id)}</div>
       </div>
-    `; }).join('') : '<p>No news yet.</p>'
-  } catch (err) {
-    document.getElementById('my-news-list').innerHTML = `<p style="color: red;">Error loading news: ${err.message || 'Unknown error'}. Lütfen "news" tablosunun Supabase'de var olduğundan emin olun.</p>`;
-  }
+    `).join('') : '<p>No news yet.</p>';
 
-  // Permissions Tab Logic
+    await renderPermissionsManager(provider);
+
+  } catch (err) {
+    console.error('Fatal error in renderProviderDashboard:', err);
+    app.innerHTML = `<div class="container"><div class="card mt-4" style="border: 1px solid red; color: #ef4444; padding: 2rem; text-align: center;">
+      <h2 style="margin-bottom: 1rem;">Oops! Something went wrong</h2>
+      <p style="margin-bottom: 1.5rem; font-size: 0.9rem; opacity: 0.8;">${err.message || 'Unknown error occurred while loading your dashboard.'}</p>
+      <button onclick="location.reload()" class="btn btn-primary" style="width: auto; margin: 0 auto;">Refresh Page</button>
+    </div></div>`;
+  }
+}
+
+async function renderPermissionsManager(provider) {
   const standardPerms = [
     { label: 'Animals', description: 'I give permission for my child to handle, stroke and learn about animals on visits to farms and other educational settings, or touch, handle and stroke animals we have invited into the setting (where risk assessments are in place).' },
     { label: 'Antihistamine (Piriton)', description: 'I give permission for my child to be administered piriton antihistamine if needed – parents would be informed prior to administration of piriton.' },
@@ -3270,14 +3221,10 @@ async function renderProviderDashboard() {
     let perms = await getProviderPermissions(provider.id);
     if (perms.length === 0) {
       console.log('Seeding standard permissions...');
-      for (const p of standardPerms) {
-        await saveProviderPermission(provider.id, p);
-      }
+      for (const p of standardPerms) await saveProviderPermission(provider.id, p);
       perms = await getProviderPermissions(provider.id);
     }
-    // Filter unique permissions by label
     perms = Array.from(new Map(perms.map(p => [p.label, p])).values());
-    
     document.getElementById('my-p-list').innerHTML = perms.map(p => `
       <div class="card" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border: 1px solid #e2e8f0; margin-bottom: 1rem;">
         <div style="flex: 1;">
@@ -3287,21 +3234,109 @@ async function renderProviderDashboard() {
         <button onclick='window.handleEditPermission(${JSON.stringify(p).replace(/'/g, "\\'")})' class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</button>
       </div>
     `).join('');
-  } catch (err) {
-    document.getElementById('my-p-list').innerHTML = `<p style="color: #64748b; background: #f8fafc; padding: 1.5rem; border-radius: 12px; text-align: center; border: 1px solid #e2e8f0;">Lütfen "provider_permissions" tablosunun Supabase'de var olduğundan emin olun.<br><small style="font-size: 0.7rem; color: #94a3b8;">${err.message}</small></p>`;
-  }
-
     document.getElementById('a-perm').onclick = () => renderPermissionForm(provider.id);
   } catch (err) {
-    console.error('Fatal error in renderProviderDashboard:', err);
-    app.innerHTML = `<div class="container"><div class="card mt-4" style="border: 1px solid red; color: #ef4444; padding: 2rem; text-align: center;">
-      <h2 style="margin-bottom: 1rem;">Oops! Something went wrong</h2>
-      <p style="margin-bottom: 1.5rem; font-size: 0.9rem; opacity: 0.8;">${err.message || 'Unknown error occurred while loading your dashboard.'}</p>
-      <button onclick="location.reload()" class="btn btn-primary" style="width: auto; margin: 0 auto;">Refresh Page</button>
-      <p style="margin-top: 1rem; font-size: 0.75rem; color: #94a3b8;">If this persists, please contact support.</p>
-    </div></div>`;
+    document.getElementById('my-p-list').innerHTML = `<p style="color:red; text-align:center;">Error loading permissions.</p>`;
   }
 }
+
+async function loadProviderStats(providerId) {
+  try {
+    const { data: acts } = await supabase.from('activities').select('id').eq('provider_id', providerId);
+    const actIds = acts.map(a => a.id);
+    const { data: invs } = await supabase.from('invoices').select('parent_id').in('activity_id', actIds);
+    const uniqueCustomers = new Set(invs.map(i => i.parent_id)).size;
+    document.getElementById('p-stat-users').textContent = uniqueCustomers || 0;
+    document.getElementById('p-stat-acts').textContent = acts.length || 0;
+    document.getElementById('p-stat-bookings').textContent = invs.length || 0;
+  } catch (err) { console.error(err); }
+}
+
+async function loadProviderSummary(providerId) {
+  const container = document.getElementById('prov-dash-content');
+  if (!container) return;
+  container.innerHTML = '<p style="text-align:center; padding: 2rem; color: #64748b;">Generating summary...</p>';
+  try {
+    const { data: acts } = await supabase.from('activities').select('id, name, photo_url, price_child, location_type').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(3);
+    const actIds = acts.map(a => a.id);
+    const { data: bookings } = await supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name)').in('activity_id', actIds).order('created_at', { ascending: false }).limit(20);
+    const bookingGroups = {};
+    bookings.forEach(inv => {
+      const timeKey = new Date(inv.created_at).toISOString().substring(0, 16);
+      const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
+      if (!bookingGroups[key]) bookingGroups[key] = { name: inv.activities?.name || 'Session', parent: inv.profiles?.full_name || 'Parent', date: inv.event_date, count: 0 };
+      bookingGroups[key].count++;
+    });
+    const consolidatedBookings = Object.values(bookingGroups).slice(0, 5);
+    const { data: comments } = await supabase.from('comments').select('*, profiles:user_id(full_name), activities(name)').in('activity_id', actIds).eq('status', 'pending').limit(5);
+
+    container.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div class="card" style="margin-bottom: 0;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+            <span style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 10px;">🎟️</span>
+            Recent Bookings
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${consolidatedBookings.map(b => `
+              <div style="padding: 10px; border-radius: 10px; background: #f0fdf4; border: 1px solid #dcfce7;">
+                <p style="font-size: 0.85rem; font-weight: 800; margin: 0; color: #166534;">${b.name}</p>
+                <p style="font-size: 0.75rem; color: #15803d; margin: 4px 0 0 0;">${b.parent} • ${b.count} people • ${b.date}</p>
+              </div>
+            `).join('') || '<p style="text-align:center; color:#94a3b8;">No recent bookings</p>'}
+          </div>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+            <span style="background: rgba(59, 130, 246, 0.1); padding: 8px; border-radius: 10px;">🚀</span>
+            Latest Sessions
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${acts.map(a => `
+              <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; background: #f8fafc;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: #e2e8f0; overflow: hidden;">
+                  ${a.photo_url ? `<img src="${a.photo_url}" style="width:100%; height:100%; object-fit:cover;">` : ''}
+                </div>
+                <div><p style="font-size: 0.85rem; font-weight: 700; margin: 0;">${a.name}</p><p style="font-size: 0.7rem; color: #64748b; margin: 0;">£${a.price_child} • ${a.location_type}</p></div>
+              </div>
+            `).join('') || '<p style="text-align:center; color:#94a3b8;">No activities found</p>'}
+          </div>
+        </div>
+        <div class="card" style="margin-bottom: 0;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+            <span style="background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 10px;">⚖️</span>
+            Moderation Alerts
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${comments.map(c => `
+              <div style="padding: 10px; border-radius: 10px; background: #fffbeb; border: 1px solid #fef3c7;">
+                <p style="font-size: 0.75rem; color: #92400e; margin: 0;"><strong>${c.profiles?.full_name}</strong> on <strong>${c.activities?.name}</strong>:</p>
+                <p style="font-size: 0.8rem; margin: 4px 0 0 0; color: #78350f;">"${c.content}"</p>
+              </div>
+            `).join('') || '<p style="text-align:center; color:#94a3b8; font-size: 0.8rem;">Clean slate! No pending comments.</p>'}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) { console.error(err); }
+}
+
+async function renderProviderActivities(providerId) {
+  document.querySelectorAll('#prov-tab-content > div').forEach(d => d.style.display = 'none');
+  document.getElementById('prov-act-content').style.display = 'block';
+}
+
+async function renderProviderNews(providerId) {
+  document.querySelectorAll('#prov-tab-content > div').forEach(d => d.style.display = 'none');
+  document.getElementById('prov-news-content').style.display = 'block';
+}
+
+async function renderProviderMoreOptions(provider) {
+  document.querySelectorAll('#prov-tab-content > div').forEach(d => d.style.display = 'none');
+  document.getElementById('prov-others-content').style.display = 'block';
+}
+
+
 
 window.handleToggleActivityLike = async (activityId, btnId, countId, reactorsId) => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -4918,7 +4953,7 @@ async function renderAdminDashboard() {
   app.innerHTML = `
     <div class="admin-layout" style="display: flex; min-height: 100vh; background: #f8fafc; font-family: 'Inter', sans-serif;">
       <!-- Sidebar -->
-      <aside style="width: 280px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 100;">
+      <aside class="admin-sidebar" style="width: 280px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 100;">
         <div style="padding: 2rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
           <img src="${logo}" alt="Urban Tribe" style="height: 35px;">
 
@@ -4926,7 +4961,11 @@ async function renderAdminDashboard() {
         
         <nav style="flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
           <p style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 0.75rem 0.75rem;">Main Menu</p>
-          <button class="tab-btn active" data-tab="users" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
+          <button class="tab-btn active" data-tab="dashboard" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" /></svg>
+            Overview
+          </button>
+          <button class="tab-btn" data-tab="users" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-3.833-6.248 3 3 0 0 0-4.885-3.133 3 3 0 0 0-4.885 3.133 4.125 4.125 0 0 0-3.833 6.248 9.337 9.337 0 0 0 4.121.952 9.38 9.38 0 0 0 2.625-.372" /></svg>
             Users
           </button>
@@ -5013,22 +5052,92 @@ async function renderAdminDashboard() {
            </div>
         </div>
       </main>
+
+      <!-- NEW: Mobile Bottom Nav -->
+      <nav class="admin-bottom-nav">
+        <button class="admin-nav-item active" data-tab="dashboard">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" /></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="admin-nav-item" data-tab="users">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-3.833-6.248 3 3 0 0 0-4.885-3.133 3 3 0 0 0-4.885 3.133 4.125 4.125 0 0 0-3.833 6.248 9.337 9.337 0 0 0 4.121.952 9.38 9.38 0 0 0 2.625-.372" /></svg>
+          <span>Users</span>
+        </button>
+        <button class="admin-nav-item" data-tab="providers">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21" /></svg>
+          <span>Providers</span>
+        </button>
+        <button class="admin-nav-item" data-tab="activities">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25" /></svg>
+          <span>Activities</span>
+        </button>
+        <button class="admin-nav-item" data-tab="news">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5" /></svg>
+          <span>News</span>
+        </button>
+        <button class="admin-nav-item" id="admin-more-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+          <span>More</span>
+        </button>
+      </nav>
+
+      <!-- NEW: More Menu Overlay -->
+      <div id="admin-more-menu" class="admin-more-overlay">
+        <button class="overlay-close" id="admin-close-more">&times;</button>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 2rem;">System Menu</h2>
+        <div class="admin-overlay-grid">
+          <div class="overlay-item" data-tab="friends">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21" /></svg>
+            Friends
+          </div>
+          <div class="overlay-item" data-tab="invoices">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5" /></svg>
+            Bookings
+          </div>
+          <div class="overlay-item" data-tab="newsletter">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75" /></svg>
+            Interest List
+          </div>
+          <div class="overlay-item" data-tab="permissions">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036" /></svg>
+            Permissions
+          </div>
+          <div class="overlay-item" id="over-nav-messages">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M7.5 8.25h9m-9 3H12" /></svg>
+            Messages
+          </div>
+          <div class="overlay-item" id="over-nav-mod">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+            Moderation
+          </div>
+          <div class="overlay-item" id="over-nav-logout" style="color: #ef4444;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6" /></svg>
+            Exit Console
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
   // Attach Events
-  const tabs = document.querySelectorAll('.tab-btn[data-tab]');
+  const tabs = document.querySelectorAll('[data-tab]');
   tabs.forEach(t => {
     t.onclick = () => {
-      tabs.forEach(btn => btn.classList.remove('active'));
+      // Close overlay if open
+      document.getElementById('admin-more-menu').classList.remove('open');
+      
+      // Update active state
+      document.querySelectorAll('[data-tab]').forEach(btn => btn.classList.remove('active'));
       t.classList.add('active');
+      
       const tab = t.dataset.tab;
       const content = document.getElementById('admin-tab-content');
       content.classList.remove('fade-up');
       void content.offsetWidth;
       content.classList.add('fade-up');
 
-      if (tab === 'users') loadAdminUsers();
+      if (tab === 'dashboard') loadAdminSummary();
+      else if (tab === 'users') loadAdminUsers();
       else if (tab === 'providers') loadAdminProviders();
       else if (tab === 'activities') loadAdminActivities();
       else if (tab === 'news') loadAdminNewsAndPolls();
@@ -5039,12 +5148,31 @@ async function renderAdminDashboard() {
     };
   });
 
+  // Mobile More Toggle
+  document.getElementById('admin-more-btn').onclick = () => {
+    document.getElementById('admin-more-menu').classList.add('open');
+  };
+  document.getElementById('admin-close-more').onclick = () => {
+    document.getElementById('admin-more-menu').classList.remove('open');
+  };
+
   document.getElementById('side-nav-messages')?.addEventListener('click', () => renderMessagesTab());
+  document.getElementById('over-nav-messages')?.addEventListener('click', () => {
+    document.getElementById('admin-more-menu').classList.remove('open');
+    renderMessagesTab();
+  });
+
   document.getElementById('side-nav-mod')?.addEventListener('click', () => loadAdminModeration());
+  document.getElementById('over-nav-mod')?.addEventListener('click', () => {
+    document.getElementById('admin-more-menu').classList.remove('open');
+    loadAdminModeration();
+  });
+
   document.getElementById('side-nav-logout')?.addEventListener('click', () => handleLogout());
+  document.getElementById('over-nav-logout')?.addEventListener('click', () => handleLogout());
 
   loadAdminStats();
-  loadAdminUsers();
+  loadAdminSummary();
 }
 
 function renderAdminBottomNav(activeTab) {
@@ -5257,6 +5385,138 @@ window.renderEditProviderModal = (provider) => {
     }
   };
 };
+
+async function loadAdminSummary() {
+  const container = document.getElementById('admin-tab-content');
+  container.innerHTML = `<div style="text-align: center; padding: 3rem;"><div class="spinner"></div><p class="mt-4">Gathering platform overview...</p></div>`;
+
+  try {
+    const [usersRes, providersRes, activitiesRes, newsRes, reportsRes, bookingsRes] = await Promise.all([
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
+      supabase.from('profiles').select('*').eq('role', 'provider').order('created_at', { ascending: false }).limit(5),
+      supabase.from('activities').select('*, providers(business_name)').order('created_at', { ascending: false }).limit(5),
+      supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
+      supabase.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name)').order('created_at', { ascending: false }).limit(5)
+    ]);
+
+    const users = usersRes.data || [];
+    const providers = providersRes.data || [];
+    const activities = activitiesRes.data || [];
+    const news = newsRes.data || [];
+    const reportsCount = reportsRes.count || 0;
+    
+    // Group bookings for the summary card too
+    const bookingGroups = {};
+    (bookingsRes.data || []).forEach(inv => {
+      const timeKey = new Date(inv.created_at).toISOString().substring(0, 16);
+      const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
+      if (!bookingGroups[key]) {
+        bookingGroups[key] = {
+          name: inv.activities?.name || 'Session',
+          parent: inv.profiles?.full_name || 'Parent',
+          date: inv.event_date,
+          count: 0
+        };
+      }
+      bookingGroups[key].count++;
+    });
+    const consolidatedBookings = Object.values(bookingGroups).slice(0, 5);
+
+    container.innerHTML = `
+      <div class="admin-summary-view" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Left Col: Users & Bookings -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+              <span style="background: rgba(166, 206, 57, 0.1); padding: 8px; border-radius: 10px;">👥</span>
+              Recent New Members
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              ${users.map(u => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 10px; background: #f8fafc;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">${u.full_name?.[0] || '?'}</div>
+                    <div>
+                      <p style="font-size: 0.85rem; font-weight: 700; margin: 0; color: #1e293b;">${u.full_name || 'Anonymous'}</p>
+                      <p style="font-size: 0.7rem; color: #94a3b8; margin: 0;">${new Date(u.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span class="role-badge role-${u.role}" style="font-size: 0.6rem;">${u.role}</span>
+                </div>
+              `).join('') || '<p style="text-align:center; color:#94a3b8;">No users found</p>'}
+            </div>
+            <button class="btn btn-outline" style="margin-top: 1.5rem; padding: 10px; font-size: 0.8rem;" onclick="document.querySelector('[data-tab=users]').click()">View All Users</button>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+              <span style="background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 10px;">🎟️</span>
+              Recent Bookings
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              ${consolidatedBookings.map(b => `
+                <div style="padding: 10px; border-radius: 10px; background: #f0fdf4; border: 1px solid #dcfce7;">
+                  <p style="font-size: 0.85rem; font-weight: 800; margin: 0; color: #166534;">${b.name}</p>
+                  <p style="font-size: 0.75rem; color: #15803d; margin: 4px 0 0 0;">${b.parent} • ${b.count} people • ${b.date}</p>
+                </div>
+              `).join('') || '<p style="text-align:center; color:#94a3b8;">No recent bookings</p>'}
+            </div>
+            <button class="btn btn-outline" style="margin-top: 1.5rem; padding: 10px; font-size: 0.8rem;" onclick="document.querySelector('[data-tab=invoices]').click()">Manage Bookings</button>
+          </div>
+        </div>
+
+        <!-- Right Col: Activities, Moderation & Providers -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+              <span style="background: rgba(245, 158, 11, 0.1); padding: 8px; border-radius: 10px;">🎨</span>
+              Latest Activities
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              ${activities.map(a => `
+                <div style="padding: 10px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                  <p style="font-size: 0.85rem; font-weight: 800; margin: 0; color: #1e293b;">${a.title || a.name || 'Untitled'}</p>
+                  <p style="font-size: 0.75rem; color: #64748b; margin: 4px 0 0 0;">By ${a.providers?.business_name || 'Urban Tribe'}</p>
+                </div>
+              `).join('') || '<p style="text-align:center; color:#94a3b8;">No activities yet</p>'}
+            </div>
+            <button class="btn btn-outline" style="margin-top: 1.5rem; padding: 10px; font-size: 0.8rem;" onclick="document.querySelector('[data-tab=activities]').click()">Manage Activities</button>
+          </div>
+
+          <div class="card" style="margin-bottom: 0; background: #fff1f2; border-color: #fecaca;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: #9f1239;">⚠️ Moderation</h3>
+            <p style="font-size: 0.9rem; color: #be123c; margin-bottom: 1.25rem;">There are <strong>${reportsCount}</strong> pending items requiring attention.</p>
+            <button class="btn" style="background: #e11d48; color: white; padding: 10px; font-size: 0.8rem;" onclick="loadAdminModeration()">Open Moderation Center</button>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;">
+              <span style="background: rgba(139, 92, 246, 0.1); padding: 8px; border-radius: 10px;">🏪</span>
+              Recent Providers
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              ${providers.length ? providers.map(p => `
+                <div style="display: flex; align-items: center; gap: 12px; padding: 8px;">
+                  <div style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
+                  <div>
+                    <p style="font-size: 0.85rem; font-weight: 700; margin: 0;">${p.full_name}</p>
+                    <p style="font-size: 0.7rem; color: #94a3b8; margin: 0;">Joined ${new Date(p.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              `).join('') : '<p style="color: #94a3b8; font-size: 0.85rem; text-align: center;">No providers yet</p>'}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  } catch (err) {
+    console.error('Error loading admin summary:', err);
+    container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 2rem;">Error loading summary: ${err.message}</p>`;
+  }
+}
 
 async function loadAdminUsers() {
   const container = document.getElementById('admin-tab-content');
@@ -5728,27 +5988,84 @@ async function loadAdminFriends() {
 async function loadAdminInvoices() {
   const container = document.getElementById('admin-tab-content');
   if (!container) return;
-  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading bookings...</p>';
+  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Consolidating booking data...</p>';
   try {
-    const invoices = await adminGetAllInvoices();
+    const rawInvoices = await adminGetAllInvoices();
+    
+    // Group invoices by a unique booking key: Parent + Activity + Event Date + Created At (truncated to minute)
+    const groups = {};
+    rawInvoices.forEach(inv => {
+      const timeKey = new Date(inv.created_at).toISOString().substring(0, 16); // Group by minute
+      const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
+      
+      if (!groups[key]) {
+        groups[key] = {
+          parent: inv.profiles?.full_name || 'N/A',
+          activity: inv.activities?.name || 'N/A',
+          date: inv.event_date,
+          amount: 0,
+          children: [],
+          adults: inv.adult_attendees || [],
+          adultCount: inv.adult_count || 0,
+          status: inv.status,
+          contact: inv.metadata || {}
+        };
+      }
+      
+      if (inv.child_id && inv.children?.name) {
+        if (!groups[key].children.includes(inv.children.name)) {
+          groups[key].children.push(inv.children.name);
+        }
+      }
+      // Sum amounts if they are separate rows, but handle potential summary rows
+      // (Simplified: using the max amount or summing based on logic)
+      groups[key].amount = Math.max(groups[key].amount, inv.amount || 0);
+    });
+
+    const consolidated = Object.values(groups);
+
     container.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-weight: 800; margin: 0;">Platform Bookings <span style="font-size: 0.8rem; background: #f1f5f9; padding: 4px 12px; border-radius: 20px; color: #64748b;">${consolidated.length} transactions</span></h3>
+      </div>
       <div style="overflow-x: auto;">
         <table class="admin-table">
           <thead>
             <tr>
               <th>Parent</th>
               <th>Activity</th>
-              <th>Child</th>
-              <th>Date</th>
+              <th style="text-align: center;">Size</th>
+              <th>Attendees</th>
+              <th>Event Date</th>
+              <th>Amount</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            ${invoices.map(i => `
+            ${consolidated.map(g => `
               <tr>
-                <td style="font-weight: 600;">${i.profiles?.full_name || 'N/A'}</td>
-                <td style="font-size: 0.85rem;">${i.activities?.name || 'N/A'}</td>
-                <td style="font-size: 0.85rem;">${i.children?.name || 'N/A'}</td>
-                <td style="font-size: 0.75rem; color: #64748b;">${i.event_date}</td>
+                <td>
+                  <div style="font-weight: 700;">${g.parent}</div>
+                  <div style="font-size: 0.7rem; color: #94a3b8;">${g.contact.email || ''}</div>
+                </td>
+                <td style="font-size: 0.85rem; font-weight: 600;">${g.activity}</td>
+                <td style="text-align: center;">
+                  <div style="font-size: 0.85rem; font-weight: 800;">${g.children.length + g.adultCount}</div>
+                  <div style="font-size: 0.65rem; color: #64748b;">(${g.children.length}K, ${g.adultCount}A)</div>
+                </td>
+                <td>
+                  <div style="font-size: 0.75rem; color: #475569;">
+                    ${g.children.length ? `<strong>Kids:</strong> ${g.children.join(', ')}` : ''}
+                    ${g.adults.length ? `<br><strong>Adults:</strong> ${g.adults.join(', ')}` : ''}
+                  </div>
+                </td>
+                <td style="font-size: 0.75rem; white-space: nowrap;">${g.date}</td>
+                <td style="font-weight: 800; color: #1e293b;">£${g.amount}</td>
+                <td>
+                  <span class="role-badge" style="background: ${g.status === 'paid' ? '#dcfce7' : '#fee2e2'}; color: ${g.status === 'paid' ? '#166534' : '#991b1b'}; font-size: 0.65rem;">
+                    ${g.status.toUpperCase()}
+                  </span>
+                </td>
               </tr>
             `).join('')}
           </tbody>
