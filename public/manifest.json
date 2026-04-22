@@ -1,0 +1,21 @@
+{
+  "name": "Urban Tribe",
+  "short_name": "UrbanTribe",
+  "description": "Community-driven activity booking for parents.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007AFF",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=UrbanTribe",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://api.dicebear.com/7.x/avataaars/svg?seed=UrbanTribe",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
