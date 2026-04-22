@@ -578,21 +578,13 @@ input:focus, .form-select:focus, textarea:focus {
 }
 
 .lp-feature-icon {
-  width: 80px;
-  height: 80px;
-  background: #f1f5f9;
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 2rem;
   font-size: 2.5rem;
+  margin-bottom: 1.5rem;
   transition: all 0.4s;
 }
 
 .lp-feature-card:hover .lp-feature-icon {
-  background: var(--primary-color);
-  transform: rotate(10deg);
+  transform: rotate(10deg) scale(1.1);
 }
 
 .lp-activity-card {
@@ -710,10 +702,7 @@ body {
   gap: 1.25rem;
 }
 
-.lp-feature-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
+/* Removed duplicate lp-feature-icon styles */
 
 .lp-feature-title {
   font-weight: 800;
