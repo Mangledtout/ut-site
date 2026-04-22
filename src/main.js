@@ -1679,6 +1679,20 @@ async function renderDashboard(user) {
 
   const initial = profile?.full_name ? profile.full_name[0].toUpperCase() : '?';
 
+  // STRENGTHENED: Check for children for ANY non-business user
+  const isBusiness = user.email === 'adele@mangledtout.com' || profile?.role === 'provider' || user.email === 'hakan1723@hotmail.com' || profile?.role === 'admin';
+  
+  if (!isBusiness) {
+    try {
+      const children = await getMyChildren();
+      if (children.length === 0) {
+        return renderOnboarding();
+      }
+    } catch (err) {
+      console.error('Error during onboarding child check:', err);
+    }
+  }
+
   app.innerHTML = `
     <div class="container" style="padding-bottom: 100px;">
       <header class="mobile-header" style="display: flex; justify-content: center; align-items: center; padding: 1rem 0; margin-bottom: 1.5rem;">
@@ -2507,25 +2521,137 @@ window.openEnrollModal = async (activity) => {
       }
 
       alert('Booking Successfully Confirmed!'); modal.remove(); initApp()
-    } catch (error) { alert(error.message); confirmBtn.disabled = false; confirmBtn.textContent = 'Confirm & Pay' }
+    } catch (error) { 
+      alert(error.message); 
+      confirmBtn.disabled = false; 
+      confirmBtn.textContent = 'Confirm & Pay' 
+    }
   }
 }
 
-window.handleEditChild = async (child) => {
-  try {
-    await renderChildForm(child);
-  } catch (error) {
-    console.error('Profile Render Error:', error);
-    alert('Could not open profile: ' + error.message);
+function renderJoinFamilyForm(fromOnboarding = false) {
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="container fade-up" style="max-width: 500px; padding: 4rem 1rem;">
+      <header style="margin-bottom: 2.5rem;">
+        <button id="b-back" class="btn btn-outline" style="width: auto; border-radius: 100px;">← Back</button>
+      </header>
+      
+      <div class="card" style="padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div style="width: 64px; height: 64px; background: #f0fdf4; color: #16a34a; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.5rem;">
+            🤝
+          </div>
+          <h1 style="font-size: 1.75rem; font-weight: 900; color: #1e293b; margin-bottom: 0.5rem;">Join a Family</h1>
+          <p style="color: #64748b; font-size: 0.95rem;">Enter the Family Code shared by your partner.</p>
+        </div>
+
+        <form id="j-form">
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="font-weight: 700; color: #475569; font-size: 0.85rem; margin-bottom: 0.5rem;">Family Code (ID)</label>
+            <input type="text" id="j-code" placeholder="e.g. 550e8400-e29b..." required style="border-radius: 12px;">
+          </div>
+          <div class="form-group" style="margin-bottom: 2rem;">
+            <label style="font-weight: 700; color: #475569; font-size: 0.85rem; margin-bottom: 0.5rem;">Your Relationship</label>
+            <select id="j-rel" class="form-select" style="border-radius: 12px;">
+              <option value="Mother">Mother</option>
+              <option value="Father">Father</option>
+              <option value="Guardian">Guardian</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <button type="submit" id="j-btn" class="btn btn-primary" style="padding: 1rem;">Join Family</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('b-back').onclick = () => fromOnboarding ? renderOnboarding() : initApp();
+  
+  document.getElementById('j-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('j-btn');
+    const code = document.getElementById('j-code').value.trim();
+    const rel = document.getElementById('j-rel').value;
+    
+    btn.disabled = true;
+    btn.textContent = 'Joining...';
+    
+    try {
+      await joinChild(code, rel);
+      alert('Welcome to the family! 🎉');
+      initApp();
+    } catch (error) {
+      console.error('Join error:', error);
+      alert('Error: Family code not found. Please double check the ID.');
+      btn.disabled = false;
+      btn.textContent = 'Join Family';
+    }
   }
 }
 
-function renderJoinFamilyForm() {
-  app.innerHTML = `<div class="container"><header class="mt-4"><button id="b-dash" class="btn btn-outline" style="width: auto;">← Back</button><h1>Join Family</h1></header><div class="card mt-4"><p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">Enter the Family Code (Child ID) shared by the other parent.</p><form id="j-form"><div class="form-group"><label>Family Code (ID)</label><input type="text" id="j-code" placeholder="e.g. 123..." required></div><div class="form-group"><label>Your Relationship</label><select id="j-rel" class="form-select"><option value="Mother">Mother</option><option value="Father">Father</option><option value="Other">Other</option></select></div><button type="submit" id="j-btn" class="btn btn-primary">Join Family</button></form></div></div>`
-  document.getElementById('b-dash').onclick = () => initApp(); document.getElementById('j-form').onsubmit = async (e) => { e.preventDefault(); const btn = document.getElementById('j-btn'); btn.disabled = true; try { await joinChild(document.getElementById('j-code').value, document.getElementById('j-rel').value); alert('Successfully joined!'); initApp(); } catch (error) { alert('Error: Code not found.'); btn.disabled = false; } }
+async function renderOnboarding() {
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="container fade-up" style="max-width: 500px; padding: 4rem 1rem; min-height: 100vh; display: flex; flex-direction: column; justify-content: center;">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <img src="${logo}" alt="Urban Tribe" style="width: 160px; margin-bottom: 1.5rem;">
+        <h1 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 1rem;">Welcome to Urban Tribe</h1>
+        <p style="color: #64748b; font-size: 1.1rem; line-height: 1.6;">Before we start, let's connect you to your tribe.</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <!-- Option 1: Join Existing -->
+        <div id="join-card" class="card" style="padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 54px; height: 54px; background: #f0fdf4; color: #16a34a; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              🤝
+            </div>
+            <div style="flex: 1;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem;">Join a Family</h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin: 0;">My partner already set up our children.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Option 2: Create New -->
+        <div id="create-card" class="card" style="padding: 1.5rem; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;">
+          <div style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 54px; height: 54px; background: #eff6ff; color: #2563eb; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              🌱
+            </div>
+            <div style="flex: 1;">
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem;">Start Your Tribe</h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin: 0;">I'm the first one here. Add my children.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 3rem; text-align: center;">
+        <button onclick="signOut().then(() => renderLandingPage())" style="background: none; border: none; color: #94a3b8; font-weight: 600; cursor: pointer; text-decoration: underline;">Sign Out</button>
+      </div>
+    </div>
+  `;
+
+  // Interaction: Hover effects
+  const cards = ['join-card', 'create-card'];
+  cards.forEach(id => {
+    const el = document.getElementById(id);
+    el.onmouseenter = () => el.style.borderColor = 'var(--primary-color)';
+    el.onmouseleave = () => el.style.borderColor = 'transparent';
+  });
+
+  // Action listeners
+  document.getElementById('join-card').onclick = () => renderJoinFamilyForm(true);
+  document.getElementById('create-card').onclick = () => renderChildForm(null, true);
 }
 
-async function renderChildForm(child = null) {
+// Helper to check if coming from onboarding
+let isOnboarding = false;
+
+async function renderChildForm(child = null, fromOnboarding = false) {
+  isOnboarding = fromOnboarding;
   const isEdit = !!child; let croppedBlob = null;
   let enrollments = [];
   let guardians = [];
@@ -2724,7 +2850,11 @@ async function renderChildForm(child = null) {
   }
   photoInput.onchange = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (re) => { cropperImage.src = re.target.result; cropperModal.style.display = 'flex'; if (cropper) cropper.destroy(); setTimeout(() => { cropper = new Cropper(cropperImage, { aspectRatio: 1, viewMode: 1, dragMode: 'move', guides: false, autoCropArea: 0.8, cropBoxMovable: false, cropBoxResizable: false, background: false, modal: false }) }, 300) }; reader.readAsDataURL(file) } }
   document.getElementById('crop-save').onclick = () => { if (cropper) { const canvas = cropper.getCroppedCanvas({ width: 500, height: 500 }); const dataUrl = canvas.toDataURL('image/jpeg'); if (!isEdit && photoPreview) { photoPreview.src = dataUrl; photoPreview.style.display = 'block'; const ph = document.getElementById('photo-placeholder'); if (ph) ph.style.display = 'none'; } if (isEdit) { const summaryImg = document.getElementById('p-img-summary'); if (summaryImg) summaryImg.src = dataUrl; } canvas.toBlob((blob) => { croppedBlob = blob }, 'image/jpeg'); cropperModal.style.display = 'none' } }
-  document.getElementById('crop-cancel').onclick = () => { cropperModal.style.display = 'none'; photoInput.value = '' }; document.getElementById('b-dash').onclick = () => initApp()
+  document.getElementById('crop-cancel').onclick = () => { cropperModal.style.display = 'none'; photoInput.value = '' }; 
+  document.getElementById('b-dash').onclick = () => {
+    if (isOnboarding) return renderOnboarding();
+    initApp();
+  };
   document.getElementById('c-form').onsubmit = async (e) => { 
     e.preventDefault(); 
     const btn = document.getElementById('save-child-btn'); 
