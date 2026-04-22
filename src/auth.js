@@ -10,16 +10,6 @@ export const signInWithGoogle = async () => {
   if (error) console.error('Error signing in with Google:', error.message)
 }
 
-export const signInWithApple = async () => {
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'apple',
-    options: {
-      redirectTo: window.location.origin
-    }
-  })
-  if (error) console.error('Error signing in with Apple:', error.message)
-}
-
 export const signInWithEmail = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,

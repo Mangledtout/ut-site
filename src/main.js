@@ -1219,8 +1219,8 @@ window.renderLandingPage = async () => {
           </div>
           <div class="lp-footer-col">
             <h4>Community</h4>
-            <a href="#" class="lp-footer-link">Privacy Policy</a>
-            <a href="#" class="lp-footer-link">Terms of Service</a>
+            <a href="#privacy" id="f-privacy" class="lp-footer-link">Privacy Policy</a>
+            <a href="#terms" id="f-terms" class="lp-footer-link">Terms of Service</a>
             <a href="#" class="lp-footer-link">Contact Us</a>
           </div>
         </div>
@@ -1231,6 +1231,8 @@ window.renderLandingPage = async () => {
   document.getElementById('lp-login').onclick = () => renderLogin();
   document.getElementById('cta-bottom').onclick = () => window.showInterestModal();
   document.getElementById('hero-register').onclick = () => window.showInterestModal();
+  document.getElementById('f-privacy').onclick = (e) => { e.preventDefault(); renderPrivacyPolicy(); };
+  document.getElementById('f-terms').onclick = (e) => { e.preventDefault(); renderTerms(); };
 
   try {
     console.log('Fetching activities for LP...');
@@ -1397,13 +1399,26 @@ async function initApp() {
     authListenerAttached = true;
   }
 
+  const hash = window.location.hash;
   if (session) { 
     await ensureProfile(session.user); 
     renderDashboard(session.user); 
   } else { 
-    renderLandingPage(); 
+    if (hash === '#privacy') renderPrivacyPolicy();
+    else if (hash === '#terms') renderTerms();
+    else renderLandingPage(); 
   }
 }
+
+// Global router for deep links
+window.addEventListener('hashchange', () => {
+  const hash = window.location.hash;
+  if (!supabase.auth.getSession()) return; // Don't route if not loaded
+  
+  if (hash === '#privacy') renderPrivacyPolicy();
+  else if (hash === '#terms') renderTerms();
+  else if (hash === '' || hash === '#home') renderLandingPage();
+});
 
 async function ensureProfile(user) {
   const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -1425,9 +1440,6 @@ function renderLogin() {
         <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
           <button id="g-login" class="btn btn-outline" style="background: #fff; border-color: #e2e8f0; font-weight: 700; font-size: 0.9rem; color: #1e293b;">
             <img src="https://www.google.com/favicon.ico" style="width: 18px; margin-right: 12px;"> Continue with Google
-          </button>
-          <button id="a-login" class="btn btn-outline" style="background: #fff; border-color: #e2e8f0; font-weight: 700; font-size: 0.9rem; color: #1e293b;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="width: 18px; margin-right: 12px;"> Continue with Apple
           </button>
         </div>
 
@@ -1455,7 +1467,6 @@ function renderLogin() {
     </div>
   `;
   document.getElementById('g-login').onclick = signInWithGoogle;
-  document.getElementById('a-login').onclick = signInWithApple;
   document.getElementById('f-pass').onclick = (e) => { e.preventDefault(); renderForgotPassword(); };
   document.getElementById('s-signup').onclick = (e) => { e.preventDefault(); renderSignUp(); };
   document.getElementById('l-form').onsubmit = async (e) => {
@@ -1526,6 +1537,94 @@ function renderSignUp() {
       btn.disabled = false; btn.textContent = 'Create Account';
     }
   };
+}
+
+function renderPrivacyPolicy() {
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="container fade-up" style="max-width: 800px; padding: 4rem 1rem;">
+      <button onclick="renderLandingPage()" class="btn btn-outline" style="margin-bottom: 2rem; border-radius: 100px;">← Back to Home</button>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #1e293b; margin-bottom: 1.5rem;">Privacy Policy</h1>
+      <p style="color: #64748b; margin-bottom: 2rem;">Last Updated: April 2024</p>
+      
+      <div class="card" style="padding: 2.5rem; line-height: 1.8; color: #334155;">
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">1. Introduction</h2>
+          <p>Welcome to Urban Tribe. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.</p>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">2. The Data We Collect</h2>
+          <p>We may collect, use, store and transfer different kinds of personal data about you which we have grouped together as follows:</p>
+          <ul>
+            <li><strong>Identity Data:</strong> includes first name, last name, username or similar identifier.</li>
+            <li><strong>Contact Data:</strong> includes email address and telephone numbers.</li>
+            <li><strong>Profile Data:</strong> includes your interests, preferences, feedback and survey responses.</li>
+            <li><strong>Technical Data:</strong> includes internet protocol (IP) address, your login data, browser type and version.</li>
+          </ul>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">3. How We Use Your Data</h2>
+          <p>We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
+          <ul>
+            <li>To register you as a new customer/member.</li>
+            <li>To process and deliver your activity bookings.</li>
+            <li>To manage our relationship with you.</li>
+            <li>To enable you to partake in a prize draw, competition or complete a survey.</li>
+          </ul>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">4. Data Security</h2>
+          <p>We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorized way. We limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.</p>
+        </section>
+
+        <section>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">5. Contact Us</h2>
+          <p>If you have any questions about this privacy policy or our privacy practices, please contact us at: <strong>hello@urbantribe.co.uk</strong></p>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function renderTerms() {
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="container fade-up" style="max-width: 800px; padding: 4rem 1rem;">
+      <button onclick="renderLandingPage()" class="btn btn-outline" style="margin-bottom: 2rem; border-radius: 100px;">← Back to Home</button>
+      <h1 style="font-size: 2.5rem; font-weight: 900; color: #1e293b; margin-bottom: 1.5rem;">Terms & Conditions</h1>
+      <p style="color: #64748b; margin-bottom: 2rem;">Last Updated: April 2024</p>
+      
+      <div class="card" style="padding: 2.5rem; line-height: 1.8; color: #334155;">
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">1. Acceptance of Terms</h2>
+          <p>By accessing and using Urban Tribe, you accept and agree to be bound by the terms and provision of this agreement.</p>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">2. Activity Bookings</h2>
+          <p>All activities booked through the platform are subject to availability. Urban Tribe reserves the right to cancel or reschedule activities. In the event of a cancellation by Urban Tribe, a full refund or credit will be provided.</p>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">3. Safety & Liability</h2>
+          <p>Parents and guardians are responsible for the supervision of their children at all times while participating in Urban Tribe activities, unless otherwise stated for specific "drop-off" sessions. You agree to follow all safety instructions provided by staff and partners.</p>
+        </section>
+
+        <section style="margin-bottom: 2rem;">
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">4. User Conduct</h2>
+          <p>Urban Tribe is a community-focused platform. We expect all users to behave with respect and kindness towards other members, children, and staff. We reserve the right to terminate access for any user who violates our community standards.</p>
+        </section>
+
+        <section>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">5. Changes to Terms</h2>
+          <p>Urban Tribe reserves the right to change these conditions from time to time as it sees fit and your continued use of the site will signify your acceptance of any adjustment to these terms.</p>
+        </section>
+      </div>
+    </div>
+  `;
 }
 
 function formatReactors(likes, currentUserId) {
