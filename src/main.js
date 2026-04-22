@@ -4,7 +4,6 @@ import { supabase } from './supabase'
 import { 
   signOut, 
   signInWithGoogle, 
-  signInWithApple, 
   signInWithEmail, 
   signUpWithEmail, 
   resetPassword, 
