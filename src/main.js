@@ -1170,7 +1170,7 @@ window.renderLandingPage = async () => {
         <div class="lp-hero-text">
           <span class="lp-badge">Rebuilding Childhood</span>
           <h1>Screen Free Socials for the <span style="color: var(--primary-color);">Modern Tribe</span>.</h1>
-          <p style="font-size: 1.25rem; line-height: 1.6; margin-bottom: 2.5rem;">Childhood has quietly shifted — more screens, more structure and less real play.<br>Urban Tribe brings back what’s been missing - freedom, friendship, and a local community where kids thrive and parents reconnect.</p>
+          <p style="font-size: 1.25rem; line-height: 1.6; margin-bottom: 2.5rem;">Childhood has quietly shifted — more screens, more structure and less real play.<br><br>Urban Tribe brings back what’s been missing - freedom, friendship, and a local community where kids thrive and parents reconnect.</p>
           <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
             <button id="hero-register" class="btn btn-primary" style="width: auto; padding: 1.2rem 2.5rem; border-radius: 100px; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(166,206,57,0.4);">✉️ Register Your Interest</button>
           </div>
