@@ -1193,7 +1193,7 @@ window.renderLandingPage = async () => {
           <div>
             <span class="lp-badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">Why It Matters</span>
             <h2 style="font-size: 2.75rem; font-weight: 900; line-height: 1.2; margin-bottom: 1.5rem;">Childhood Has Changed. <br>We're <span style="color: #8b5cf6;">Changing It Back.</span></h2>
-            <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">Research shows a steep decline in unstructured play — the kind that builds resilience, problem-solving, and social confidence. Rates of childhood anxiety have never been higher. Urban Tribe brings back the antidote: free play, real friendships, and a warm, local community.</p>
+            <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">Research shows a steep decline in unstructured play — the kind that builds resilience, problem-solving, and social confidence. And rates of childhood anxiety are rising.<br><br>Parents are feeling it too — under pressure to supervise, schedule, and entertain more than ever, often without the support of a wider community.<br><br>Urban Tribe is the antidote: free play, real friendships, and a local community where children can thrive — and parents can finally breathe.</p>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
               <div style="display: flex; gap: 1rem; align-items: flex-start;">
                 <div style="background: #fef2f2; color: #ef4444; padding: 10px; border-radius: 12px; font-size: 1.5rem;">🧠</div>
