@@ -19,7 +19,7 @@ serve(async (req) => {
 
   try {
     const { activity, selectedKidIds, adultCount, eventDate, contact } = await req.json()
-    
+
     // Get the user from the Supabase client (passed in the Authorization header)
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -33,7 +33,7 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     )
     const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    
+
     if (authError || !user) {
       console.error('Auth error:', authError);
       throw new Error('Not authenticated: ' + (authError?.message || 'No user found'));

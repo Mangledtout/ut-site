@@ -1169,8 +1169,8 @@ window.renderLandingPage = async () => {
       <header class="lp-hero fade-up" style="animation-delay: 0.1s;">
         <div class="lp-hero-text">
           <span class="lp-badge">Rebuilding Childhood</span>
-          <h1>Modern Activities for the <span style="color: var(--primary-color);">Modern Tribe</span>.</h1>
-          <p style="font-size: 1.25rem; line-height: 1.6; margin-bottom: 2.5rem;">Children are more anxious, more scheduled, and more screen-absorbed than ever. Urban Tribe brings back the ingredients they've always needed — unstructured play, genuine connection, and a local community that lifts every family up.</p>
+          <h1>Screen Free Socials for the <span style="color: var(--primary-color);">Modern Tribe</span>.</h1>
+          <p style="font-size: 1.25rem; line-height: 1.6; margin-bottom: 2.5rem;">Childhood has quietly shifted — more screens, more structure and less real play.<br>Urban Tribe brings back what’s been missing - freedom, friendship, and a local community where kids thrive and parents reconnect.</p>
           <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
             <button id="hero-register" class="btn btn-primary" style="width: auto; padding: 1.2rem 2.5rem; border-radius: 100px; font-size: 1.1rem; box-shadow: 0 10px 25px rgba(166,206,57,0.4);">✉️ Register Your Interest</button>
           </div>
@@ -1211,9 +1211,9 @@ window.renderLandingPage = async () => {
       <!-- What it Looks Like -->
       <section class="lp-section fade-up" style="background: #f8fafc; padding: 40px 5%;">
         <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-          <span class="lp-badge">Picture It</span>
-          <h2 style="font-size: 2.75rem; font-weight: 900; color: #1e293b; margin-bottom: 1rem;">A Warm Hall. <span style="color: var(--primary-color);">Buzzing with Life.</span></h2>
-          <p style="font-size: 1.1rem; color: #64748b; max-width: 700px; margin: 0 auto 3rem;">Kids drift between open-ended play stations — building dens, playing chess, running with friends, telling stories. No one tells them where to go. Their curiosity leads the way.</p>
+          <span class="lp-badge">Picture it like this</span>
+          <h2 style="font-size: 2.75rem; font-weight: 900; color: #1e293b; margin-bottom: 1rem;">A space alive with <span style="color: var(--primary-color);">energy and joy………</span></h2>
+          <p style="font-size: 1.1rem; color: #64748b; max-width: 800px; margin: 0 auto 3rem;">Kids bustle between open-ended play — building, creating, running, exploring, making up games with friends. No one tells them where to go. Their curiosity leads the way.<br><br>Some days it’s outdoors, with space to roam and climb. Other days it’s indoors, filled with creativity and buzz.<br><br>Nearby, parents sit with a drink and a biscuit, chatting, reading, or simply watching. No pressure. No hosting. Just space to breathe — and to see their children come alive.</p>
           <div class="lp-feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; text-align: left;">
             ${[['🏗️', 'Child-Led Play', 'No scripts, no schedules — just curiosity and freedom to explore.'], ['🤝', 'Real Connection', 'Mixed-age friendships and face-to-face interaction that screens can never replace.'], ['🌿', 'Healthy Risks', 'Small adventures that build confidence, resilience, and independence.'], ['☕', 'Parents Too', 'A space to exhale — chat over tea, relax on the sidelines, feel supported.']].map(([icon, title, desc]) => `
             <div class="lp-card-premium fade-up" style="animation-delay: 0.2s;">
@@ -1975,10 +1975,6 @@ async function renderActivities() {
             </div>
             <div style="text-align: right;">
               <div style="padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; background: ${isFull ? '#ef4444' : '#22c55e'}; color: #fff; margin-bottom: 4px;">
-                ${isFull ? 'JOIN WAITLIST' : 'SELECT'}
-              </div>
-              ${!isFull ? `<div style="font-size: 0.65rem; color: #16a34a; font-weight: 700;">${capacity - taken} spots left</div>` : ''}
-            </div>
           </button>
         `;
       }));
@@ -1987,6 +1983,58 @@ async function renderActivities() {
   } catch (err) {
     console.error(err);
   }
+}
+
+// --- SHARED UI COMPONENTS ---
+function renderBookingCardHtml(g) {
+  const namesSet = new Set();
+  let totalAdults = 0;
+  let totalAmount = 0;
+  let isPaid = false;
+
+  g.items.forEach(item => {
+    if (item.children?.name) namesSet.add(item.children.name);
+    totalAdults += (item.adult_count || 0);
+    totalAmount += (item.amount || 0);
+    if (item.status === 'paid') isPaid = true;
+  });
+
+  const names = Array.from(namesSet);
+  if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
+  const namesHtml = names.map(name => `<span style="color: var(--primary-color); font-weight: 800;">${name}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
+
+  const activityName = g.activities?.name || g.name || 'Activity';
+  const startTime = g.activities?.start_time || g.startTime || '00:00';
+  const endTime = g.activities?.end_time || g.endTime || '00:00';
+
+  return `
+    <div class="booking-card" style="position: relative; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9; background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border-left: 6px solid var(--primary-color); transition: transform 0.2s; margin-bottom: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+        <div style="flex: 1;">
+          <h4 style="font-weight: 900; color: #1e293b; font-size: 1.2rem; margin: 0 0 6px 0;">${activityName}</h4>
+          <p style="font-size: 0.95rem; color: #64748b; margin: 0; line-height: 1.4;">
+            ${namesHtml}
+          </p>
+        </div>
+        <div style="text-align: right; min-width: 90px;">
+          <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount.toFixed(2)}</p>
+          <div style="display: inline-block; font-size: 0.65rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
+            ${isPaid ? 'Paid' : 'Pending'}
+          </div>
+          <button onclick='alert("Editing is coming soon!")' class="btn btn-outline" style="display: block; width: 100%; margin-top: 12px; padding: 4px; font-size: 0.75rem; border-radius: 8px;">Edit</button>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.85rem; font-weight: 700; background: #f8fafc; padding: 6px 14px; border-radius: 12px; border: 1px solid #f1f5f9;">
+          <span>🗓️</span> ${g.event_date || g.date}
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 0.85rem; font-weight: 700; background: #f8fafc; padding: 6px 14px; border-radius: 12px; border: 1px solid #f1f5f9;">
+          <span>⏰</span> ${startTime} - ${endTime}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function renderUpcomingBookings() {
@@ -2002,10 +2050,8 @@ async function renderUpcomingBookings() {
         acc[key] = { ...i, items: [i] };
       } else {
         acc[key].items.push(i);
-        // Prioritize 'paid' status for the main record
         if (i.status === 'paid' && acc[key].status !== 'paid') {
           acc[key].status = 'paid';
-          acc[key].amount = i.amount; // Use the paid one as primary
         }
       }
       return acc;
@@ -2017,47 +2063,7 @@ async function renderUpcomingBookings() {
       return;
     }
 
-    ledgerEl.innerHTML = bookingsArr.map(g => {
-      const isPaid = g.status === 'paid';
-      const namesSet = new Set();
-      let totalAdults = 0;
-      let totalAmount = 0;
-
-      g.items.forEach(item => {
-        if (item.children?.name) namesSet.add(item.children.name);
-        totalAdults += (item.adult_count || 0);
-        totalAmount += (item.amount || 0);
-      });
-
-      const names = Array.from(namesSet);
-      if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
-      
-      const childrenStatusHtml = names.map(name => `<span style="color: var(--primary-color); font-weight: 800;">${name}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
-
-      return `
-        <div class="card" style="border-left: 4px solid ${isPaid ? 'var(--success)' : 'var(--warning)'}; margin-bottom: 12px; padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="flex: 1;">
-              <p style="font-weight: 800; color: #1e293b; margin: 0; font-size: 1.1rem; line-height: 1.2;">${g.activities?.name || 'Unknown Activity'}</p>
-              <p style="font-size: 0.9rem; margin: 6px 0;">${childrenStatusHtml}</p>
-              <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap;">
-                <span style="font-size: 0.75rem; background: #f8fafc; color: #64748b; padding: 4px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600;">🗓️ ${g.event_date || 'N/A'}</span>
-                <span style="font-size: 0.75rem; background: #f8fafc; color: #64748b; padding: 4px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-weight: 600;">🕒 ${g.activities?.start_time?.slice(0, 5)} - ${g.activities?.end_time?.slice(0, 5)}</span>
-              </div>
-            </div>
-            <div style="text-align: right; min-width: 90px;">
-              <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount.toFixed(2)}</p>
-              <div style="display: inline-block; font-size: 0.65rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
-                ${isPaid ? 'Paid' : 'Pending'}
-              </div>
-              <div style="margin-top: 12px;">
-                <button onclick='window.handleEditBooking(${JSON.stringify(g.items).replace(/'/g, "&apos;")})' class="btn btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.75rem; border-radius: 10px; font-weight: 800; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">Edit</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    ledgerEl.innerHTML = bookingsArr.map(g => renderBookingCardHtml(g)).join('');
   } catch (err) {
     console.error('Error in renderUpcoming:', err);
   }
@@ -2290,13 +2296,13 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
           <select id="enroll-date" class="form-select" style="background: #fff; padding: 0.75rem; border-radius: 10px; border-color: #bbf7d0; font-weight: 600;">
             <option value="">Choose a date...</option>
             ${(() => {
-              const dates = (activity.event_dates || []).filter(d => d >= new Date().toISOString().split('T')[0]);
-              if (preSelectedDate && !dates.includes(preSelectedDate)) {
-                dates.push(preSelectedDate);
-                dates.sort();
-              }
-              return dates.map(d => `<option value="${d}">${d}</option>`).join('');
-            })()}
+      const dates = (activity.event_dates || []).filter(d => d >= new Date().toISOString().split('T')[0]);
+      if (preSelectedDate && !dates.includes(preSelectedDate)) {
+        dates.push(preSelectedDate);
+        dates.sort();
+      }
+      return dates.map(d => `<option value="${d}">${d}</option>`).join('');
+    })()}
             ${(!activity.event_dates && activity.recurrence && activity.recurrence !== preSelectedDate) ? `<option value="${activity.recurrence}">${activity.recurrence}</option>` : ''}
           </select>
           <div id="capacity-indicator" style="margin-top: 10px; display: none;"></div>
@@ -2695,7 +2701,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
     const eventDate = enrollDateSelect.value;
     const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
     const adultCount = parseInt(adultCountSelect.value);
-    
+
     const contact = {
       first_name: document.getElementById('c-fname').value,
       last_name: document.getElementById('c-lname').value,
@@ -2726,7 +2732,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
       });
 
       if (error) throw error;
-      
+
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -2736,7 +2742,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
     } catch (error) {
       console.error('Payment error detail:', error);
       let errorMsg = error.message;
-      
+
       // Try to extract the specific error from the function response
       if (error.context) {
         try {
@@ -3529,16 +3535,16 @@ async function loadProviderSummary(providerId) {
     const { data: acts } = await supabase.from('activities').select('id, name, photo_url, price_child, location_type').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(3);
     const actIds = acts.map(a => a.id);
     const { data: bookings } = await supabase.from('invoices').select('*, activities(name, start_time, end_time), profiles:parent_id(full_name), children(name)').in('activity_id', actIds).order('created_at', { ascending: false }).limit(30);
-    
+
     const bookingGroups = {};
     bookings.forEach(inv => {
       const timeKey = new Date(inv.created_at).toISOString().substring(0, 16);
       const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
       if (!bookingGroups[key]) {
-        bookingGroups[key] = { 
+        bookingGroups[key] = {
           ...inv,
-          name: inv.activities?.name || 'Session', 
-          parent: inv.profiles?.full_name || 'Parent', 
+          name: inv.activities?.name || 'Session',
+          parent: inv.profiles?.full_name || 'Parent',
           date: inv.event_date,
           startTime: inv.activities?.start_time,
           endTime: inv.activities?.end_time,
@@ -3561,51 +3567,7 @@ async function loadProviderSummary(providerId) {
             Upcoming Bookings
           </h3>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
-            ${consolidatedBookings.map(g => {
-              const namesSet = new Set();
-              let totalAdults = 0;
-              let totalAmount = 0;
-              let isPaid = false;
-
-              g.items.forEach(item => {
-                if (item.children?.name) namesSet.add(item.children.name);
-                totalAdults += (item.adult_count || 0);
-                totalAmount += (item.amount || 0);
-                if (item.status === 'paid') isPaid = true;
-              });
-
-              const names = Array.from(namesSet);
-              if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
-              const namesHtml = names.map(n => `<span style="color: #10b981; font-weight: 800;">${n}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
-
-              return `
-                <div class="booking-card" style="position: relative; padding: 1.25rem; border-radius: 20px; border: 1px solid #f1f5f9; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--primary-color); transition: transform 0.2s;">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                    <div style="flex: 1;">
-                      <h4 style="font-weight: 900; color: #1e293b; font-size: 1.1rem; margin: 0 0 4px 0;">${g.name}</h4>
-                      <p style="font-size: 0.85rem; color: #64748b; margin: 0; line-height: 1.4;">
-                        ${namesHtml}
-                      </p>
-                    </div>
-                    <div style="text-align: right; min-width: 80px;">
-                      <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 1.1rem;">£${totalAmount.toFixed(2)}</p>
-                      <div style="display: inline-block; font-size: 0.6rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 2px 8px; border-radius: 6px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 4px; text-transform: uppercase;">
-                        ${isPaid ? 'Paid' : 'Pending'}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 0.75rem; font-weight: 700; background: #f8fafc; padding: 6px 12px; border-radius: 10px; border: 1px solid #f1f5f9;">
-                      <span>🗓️</span> ${g.date}
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-size: 0.75rem; font-weight: 700; background: #f8fafc; padding: 6px 12px; border-radius: 10px; border: 1px solid #f1f5f9;">
-                      <span>⏰</span> ${g.startTime || '00:00'} - ${g.endTime || '00:00'}
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
+            ${consolidatedBookings.map(g => renderBookingCardHtml(g)).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
           </div>
           <button onclick="document.getElementById('tab-prov-act').click()" class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff;">Manage Bookings</button>
         </div>
@@ -5905,51 +5867,7 @@ async function loadAdminSummary() {
             Upcoming Bookings
           </h3>
           <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
-            ${consolidatedBookings.map(g => {
-              const namesSet = new Set();
-              let totalAdults = 0;
-              let totalAmount = 0;
-              let isPaid = false;
-
-              g.items.forEach(item => {
-                if (item.children?.name) namesSet.add(item.children.name);
-                totalAdults += (item.adult_count || 0);
-                totalAmount += (item.amount || 0);
-                if (item.status === 'paid') isPaid = true;
-              });
-
-              const names = Array.from(namesSet);
-              if (totalAdults > 0) names.push(`${totalAdults} Adult${totalAdults > 1 ? 's' : ''}`);
-              const namesHtml = names.map(n => `<span style="color: #10b981; font-weight: 800;">${n}</span>`).join(' <span style="color: #94a3b8; font-weight: 400;">&</span> ');
-
-              return `
-                <div class="booking-card" style="position: relative; padding: 1rem; border-radius: 16px; border: 1px solid #f1f5f9; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 4px solid var(--primary-color);">
-                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                    <div style="flex: 1;">
-                      <h4 style="font-weight: 900; color: #1e293b; font-size: 0.95rem; margin: 0 0 2px 0;">${g.name}</h4>
-                      <p style="font-size: 0.75rem; color: #64748b; margin: 0; line-height: 1.3;">
-                        ${namesHtml}
-                      </p>
-                    </div>
-                    <div style="text-align: right; min-width: 70px;">
-                      <p style="font-weight: 900; color: #1e293b; margin: 0; font-size: 0.95rem;">£${totalAmount.toFixed(2)}</p>
-                      <div style="display: inline-block; font-size: 0.55rem; font-weight: 800; color: ${isPaid ? 'var(--success)' : 'var(--warning)'}; background: ${isPaid ? '#f0fdf4' : '#fffbeb'}; padding: 1px 6px; border-radius: 4px; border: 1px solid ${isPaid ? '#dcfce7' : '#fef3c7'}; margin-top: 2px; text-transform: uppercase;">
-                        ${isPaid ? 'Paid' : 'Pending'}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style="display: flex; gap: 6px; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 0.7rem; font-weight: 700; background: #f8fafc; padding: 4px 8px; border-radius: 8px; border: 1px solid #f1f5f9;">
-                      <span>🗓️</span> ${g.date}
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 4px; color: #64748b; font-size: 0.7rem; font-weight: 700; background: #f8fafc; padding: 4px 8px; border-radius: 8px; border: 1px solid #f1f5f9;">
-                      <span>⏰</span> ${g.startTime || '00:00'} - ${g.endTime || '00:00'}
-                    </div>
-                  </div>
-                </div>
-              `;
-            }).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
+            ${consolidatedBookings.map(g => renderBookingCardHtml(g)).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No recent bookings</p>'}
           </div>
           <button class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff; padding: 12px;" onclick="document.querySelector('[data-tab=invoices]').click()">Manage Bookings</button>
         </div>
