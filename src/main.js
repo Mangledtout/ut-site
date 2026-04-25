@@ -16,8 +16,45 @@ import {
   adminGetStats, adminGetAllUsers, adminUpdateUserRole, adminGetAllActivities, adminGetAllInvoices, adminGetAllNews, adminDeleteAllMessages, adminGetAllProviders,
   sendFriendRequest, getFriendRequests, respondToFriendRequest, getFriends, getFriendsActivities, updateSharingPreference, searchProfiles, getAllParentFriendships, fetchAllProviders,
   submitInterestRegistration, adminGetNewsletterSignups, addToWaitingList, getAllBookings,
-  isActivityFull, joinWaitlist, getWaitlist, removeFromWaitlist, notifyWaitlistEntry, getWaitlistCountForActivity
+  isActivityFull, joinWaitlist, getWaitlist, removeFromWaitlist, notifyWaitlistEntry, getWaitlistCountForActivity,
+  getSettings, updateSetting
 } from './api'
+
+// --- ANALYTICS ---
+window.trackPageView = (pageName) => {
+  if (typeof gtag === 'function') {
+    gtag('event', 'page_view', {
+      page_title: pageName,
+      page_location: window.location.href,
+      page_path: '/' + (pageName || 'home').toLowerCase()
+    });
+  }
+};
+
+// --- NOTIFICATIONS ---
+window.showToast = (message, type = 'success') => {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `
+    <span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span>
+    <span class="toast-message">${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
+};
 
 import logo from './assets/logo.png'
 
@@ -26,7 +63,7 @@ window.handleLogout = async () => {
     await signOut();
     renderLogin();
   } catch (err) {
-    alert('Logout failed: ' + err.message);
+    showToast('Logout failed: ' + err.message, 'error');
   }
 };
 
@@ -625,7 +662,7 @@ async function renderMessageThread(type, id, userId = null, threadId = null) {
         textarea.value += (textarea.value ? '\n' : '') + url;
         attachBtn.innerHTML = '✅';
       } catch (err) {
-        alert('Upload failed: ' + err.message);
+        showToast('Upload failed: ' + err.message, 'error');
       } finally {
         attachBtn.disabled = false;
         setTimeout(() => {
@@ -658,7 +695,7 @@ async function renderMessageThread(type, id, userId = null, threadId = null) {
         await addComment(type, id, content, parentId, true, '', target);
         renderMessageThread(type, id, userId, parentId);
       } catch (err) {
-        alert('Error: ' + err.message);
+        showToast('Error: ' + err.message, 'error');
         btn.disabled = false;
         btn.textContent = 'Send';
       }
@@ -917,8 +954,8 @@ window.renderNewMessageModal = async (profile) => {
   modal.querySelector('#btn-send-new-msg').onclick = async () => {
     const title = modal.querySelector('#new-msg-title').value.trim();
     const content = modal.querySelector('#new-msg-content').value.trim();
-    if (!title) return alert('Please enter a message title.');
-    if (!content) return alert('Please enter your message.');
+    if (!title) { showToast('Please enter a message title.', 'error'); return; }
+    if (!content) { showToast('Please enter your message.', 'error'); return; }
 
     const btn = modal.querySelector('#btn-send-new-msg');
     btn.disabled = true;
@@ -949,7 +986,7 @@ window.renderNewMessageModal = async (profile) => {
         await addComment('activity', selectedRecipient.id, content, null, true, title);
       }
 
-      alert('Message sent successfully!');
+      showToast('Message sent successfully!');
       modal.remove();
       renderMessagesTab();
     } catch (err) {
@@ -1176,15 +1213,23 @@ window.renderLandingPage = async () => {
           </div>
           <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 1rem;">We're coming soon — register to be the first to hear when we launch.</p>
         </div>
-        <div class="lp-hero-image" style="border-radius: 60px; transform: rotate(-2deg); border: 8px solid #fff;">
-          <img src="/hero.png" alt="Happy Kids">
+        <div class="lp-hero-image" style="border-radius: 60px; transform: rotate(-2deg); border: 8px solid #fff; position: relative; aspect-ratio: 1/1; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.1);">
+          <img src="/hero_v2.png" alt="Happy Kids" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+          <div style="position: absolute; bottom: 15px; right: 20px; font-size: 0.5rem; color: #fff; opacity: 0.15; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.15'">
+            <a href="https://www.vecteezy.com/free-photos/child" target="_blank" style="color: inherit; text-decoration: none;">Vecteezy</a>
+          </div>
         </div>
       </header>
 
       <section class="lp-section" style="background: #fff;">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; max-width: 1200px; margin: 0 auto;">
           <div style="position: relative;">
-            <img src="/about_kids.png" alt="Creative Kids" style="width: 100%; border-radius: 40px; box-shadow: 0 30px 60px rgba(0,0,0,0.1);">
+            <div style="border-radius: 40px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.1); aspect-ratio: 1/1;">
+              <img src="/about_new.jpg" alt="Children Playing" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+            </div>
+            <div style="position: absolute; bottom: 15px; left: 20px; font-size: 0.5rem; color: #fff; opacity: 0.15; transition: opacity 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='0.15'">
+              <a href="https://www.vecteezy.com/free-photos/child" target="_blank" style="color: inherit; text-decoration: none;">Vecteezy</a>
+            </div>
             <div style="position: absolute; bottom: -20px; right: -20px; background: var(--primary-color); color: #1e293b; padding: 1.5rem 2rem; border-radius: 30px; text-align: center; box-shadow: 0 20px 40px rgba(166,206,57,0.3);">
               <h4 style="font-size: 1.75rem; margin: 0; font-weight: 900;">Screen-Free</h4>
               <p style="margin: 0; font-weight: 700; font-size: 0.9rem;">Every Session</p>
@@ -1229,13 +1274,18 @@ window.renderLandingPage = async () => {
 
       <!-- Founder Story -->
       <section class="lp-section" style="background: #1e293b; padding: 40px 5%;">
-        <div style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: center;">
-          <div style="width: 140px; height: 140px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 4rem; flex-shrink: 0;">👩‍🔬</div>
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: center;">
+          <div style="width: 160px; height: 160px; border-radius: 50%; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.3); flex-shrink: 0; border: 4px solid var(--primary-color);">
+            <img src="/founders.png" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
           <div>
-            <span class="lp-badge" style="background: rgba(166,206,57,0.15); color: var(--primary-color);">Our Founder</span>
-            <h2 style="color: #fff; font-size: 2rem; font-weight: 900; margin: 0.75rem 0 1rem;">Built by a Leader, a Parent & a Scientist.</h2>
-            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin-bottom: 1rem;">With over 20 years as a Brownie leader, a PhD in science, and a parent navigating today's pressures firsthand — Urban Tribe is the natural meeting point of everything I've learned. I've watched childhood change up close. Kids are more anxious, more scheduled, and too often disconnected from the joy of simple play.</p>
-            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin: 0;">They say it takes a village to raise a child. Urban Tribe is that village — rebuilt for modern families. A place to give children back their freedom, connection, and resilience. And parents back their community.</p>
+            <span class="lp-badge" style="background: rgba(166,206,57,0.15); color: var(--primary-color);">Our Co Founders</span>
+            <h2 style="color: #fff; font-size: 2rem; font-weight: 900; margin: 0.75rem 0 1rem;">Built by a Leader, a Parent & a Scientist and an IT Geek.</h2>
+            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">Built by Adele; a Youth Leader, Parent & Scientist — together with Hakan; an IT Geek, Ayla; the real boss and Cem; the muscle.</p>
+            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">Urban Tribe brings together my experience as a parent, my years as a youth leader, and a deep desire to rebuild the sense of community childhood has lost.</p>
+            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">With over 20 years as a Brownie leader, a PhD in science, and the daily reality of parenting in today’s world, I’ve seen firsthand how childhood has shifted — more structured, more anxious, and often disconnected from the freedom of real play.</p>
+            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin-bottom: 1.5rem;">Hakan, our IT Geek, brings the technical expertise that turns the vision into reality — building the systems that make Urban Tribe simple and accessible.</p>
+            <p style="color: rgba(255,255,255,0.75); font-size: 1rem; line-height: 1.8; margin: 0;">They say it takes a village to raise a child. Urban Tribe is that village — rebuilt for modern families. A place where children regain freedom, connection, and confidence, and where parents find community again.</p>
           </div>
         </div>
       </section>
@@ -1247,8 +1297,6 @@ window.renderLandingPage = async () => {
           <div class="lp-split-col">
             <div class="lp-section-title" style="text-align: left; margin-bottom: 2rem;">
               <span class="lp-badge">Upcoming Sessions</span>
-              <h2 style="font-size: 2.5rem;">What's On Near You</h2>
-              <p>All-weather, screen-free sessions for children to play freely and parents to breathe.</p>
             </div>
             <div id="lp-activity-list" style="display: grid; gap: 2rem;">
               <p style="text-align: center; color: var(--text-muted);">Finding sessions...</p>
@@ -1273,7 +1321,6 @@ window.renderLandingPage = async () => {
           <div class="lp-footer-col">
             <h4>For Families</h4>
             <a href="#" class="lp-footer-link">Find Sessions</a>
-            <a href="#" class="lp-footer-link">For Providers</a>
             <a href="#" class="lp-footer-link">Our Mission</a>
             <a href="#" class="lp-footer-link">The Research</a>
           </div>
@@ -1314,10 +1361,9 @@ window.renderLandingPage = async () => {
           <div style="flex: 1;">
             <p style="font-size: 0.75rem; font-weight: 800; color: var(--primary-color); text-transform: uppercase; margin-bottom: 0.4rem;">${a.category || 'Workshop'}</p>
             <h3 style="margin-bottom: 0.4rem; font-size: 1.3rem; font-weight: 800;">${a.name}</h3>
-            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">${a.providers?.business_name || 'Urban Tribe'}</p>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 1.1rem; font-weight: 900; color: #1e293b;">£${a.price || '0'}</span>
-              <button onclick="window.renderLogin()" class="btn btn-primary" style="width: auto; padding: 0.5rem 1.25rem; border-radius: 100px; font-size: 0.85rem;">Book Now</button>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">${(a.description || '').substring(0, 60)}${a.description?.length > 60 ? '...' : ''}</p>
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 1rem;">
+              <button onclick="window.renderLogin()" class="btn btn-primary" style="width: 100%; padding: 1rem 2rem; border-radius: 100px; font-size: 1rem; font-weight: 800; box-shadow: 0 10px 20px rgba(166,206,57,0.3);">Book Now</button>
             </div>
           </div>
         </div>
@@ -1438,6 +1484,29 @@ window.showInterestModal = () => {
 
 async function initApp() {
   console.log('--- initApp Started ---');
+  
+  // Dynamic GA Loader
+  try {
+    const settings = await getSettings();
+    const gaId = settings.find(s => s.key === 'google_analytics_id')?.value;
+    if (gaId && gaId !== 'G-XXXXXXXXXX') {
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+      document.head.appendChild(script);
+      
+      const configScript = document.createElement('script');
+      configScript.innerHTML = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${gaId}', { send_page_view: false });
+      `;
+      document.head.appendChild(configScript);
+      console.log('GA4 Loaded dynamically:', gaId);
+    }
+  } catch (err) { console.error('GA Loader error:', err); }
+
   const { data: { session } } = await supabase.auth.getSession()
   console.log('Session status:', session ? 'Logged in' : 'Logged out');
 
@@ -1448,8 +1517,7 @@ async function initApp() {
       else if (session) {
         // Only perform profile check and re-render for major auth events
         if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-          await ensureProfile(session.user);
-          renderDashboard('dash');
+          checkVerificationAndRender(session.user);
         }
       }
       else {
@@ -1461,8 +1529,7 @@ async function initApp() {
 
   const hash = window.location.hash;
   if (session) {
-    await ensureProfile(session.user);
-    renderDashboard('dash');
+    checkVerificationAndRender(session.user);
   } else {
     if (hash === '#privacy') renderPrivacyPolicy();
     else if (hash === '#terms') renderTerms();
@@ -1482,7 +1549,59 @@ window.addEventListener('hashchange', () => {
 
 async function ensureProfile(user) {
   const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-  if (!data) { await supabase.from('profiles').insert([{ id: user.id, full_name: user.email.split('@')[0], role: 'parent' }]) }
+  if (!data) {
+    const { data: newProfile } = await supabase.from('profiles').insert([{ 
+      id: user.id, 
+      full_name: user.email.split('@')[0], 
+      role: 'parent',
+      is_verified: !!user.email_confirmed_at
+    }]).select().single();
+    return newProfile;
+  }
+  return data;
+}
+
+async function checkVerificationAndRender(user) {
+  const profile = await ensureProfile(user);
+  if (!profile.is_verified && profile.role !== 'superadmin') {
+    renderPendingVerification(user.email);
+  } else {
+    renderDashboard('dash');
+  }
+}
+
+function renderPendingVerification(email) {
+  app.innerHTML = `
+    <div class="container fade-up" style="max-width: 440px; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 2rem;">
+      <header style="text-align: center; margin-bottom: 2.5rem;">
+        <img src="${logo}" alt="Urban Tribe" style="width: 180px; margin-bottom: 1rem;">
+        <p style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem; letter-spacing: 0.05em; text-transform: uppercase;">A Joyful Reset</p>
+      </header>
+      
+      <div class="card" style="padding: 2.5rem; text-align: center;">
+        <div style="width: 64px; height: 64px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#22c55e" style="width: 32px; height: 32px;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+          </svg>
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin-bottom: 1rem;">Verify your email</h2>
+        <p style="color: #64748b; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.6;">
+          We've sent a verification link to<br><strong style="color: #1e293b;">${email}</strong>
+        </p>
+        <p style="color: #64748b; margin-bottom: 2rem; font-size: 0.85rem;">
+          Please click the link in the email to activate your account.
+        </p>
+        <button id="refresh-verification" class="btn btn-primary" style="padding: 0.875rem; margin-bottom: 1rem;">I've verified my email</button>
+        <button id="sign-out-pending" class="btn btn-outline" style="padding: 0.875rem; border-color: #e2e8f0; color: #64748b;">Sign out</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('refresh-verification').onclick = () => window.location.reload();
+  document.getElementById('sign-out-pending').onclick = async () => {
+    await signOut();
+    window.location.reload();
+  };
 }
 
 function renderLogin() {
@@ -1550,7 +1669,7 @@ function renderForgotPassword() {
 
 function renderUpdatePasswordForm() {
   app.innerHTML = `<div class="container text-center"><header class="mt-4"><img src="${logo}" alt="Urban Tribe" style="width: 150px; margin-bottom: 0.5rem;"><p>Set New Password</p></header><div class="card mt-4"><form id="u-form"><div class="form-group"><label>New Password</label><input type="password" id="u-pass" required minlength="6"></div><button type="submit" id="u-btn" class="btn btn-primary">Update Password</button></form></div></div>`
-  document.getElementById('u-form').onsubmit = async (e) => { e.preventDefault(); const btn = document.getElementById('u-btn'); btn.disabled = true; try { await updatePassword(document.getElementById('u-pass').value); alert('Success!'); initApp(); } catch (error) { alert(error.message); btn.disabled = false; } }
+  document.getElementById('u-form').onsubmit = async (e) => { e.preventDefault(); const btn = document.getElementById('u-btn'); btn.disabled = true; try { await updatePassword(document.getElementById('u-pass').value); showToast('Success!'); initApp(); } catch (error) { showToast(error.message, 'error'); btn.disabled = false; } }
 }
 
 function renderSignUp() {
@@ -1589,9 +1708,13 @@ function renderSignUp() {
     const btn = document.getElementById('s-btn');
     btn.disabled = true; btn.textContent = '...';
     try {
-      await signUpWithEmail(document.getElementById('s-email').value, document.getElementById('s-password').value);
-      alert('Account created! Please check your email or sign in.');
-      renderLogin();
+      const { user } = await signUpWithEmail(document.getElementById('s-email').value, document.getElementById('s-password').value);
+      if (user && !user.email_confirmed_at) {
+        renderPendingVerification(user.email);
+      } else {
+        // Fallback for case where confirmation is disabled or already confirmed
+        initApp();
+      }
     } catch (error) {
       alert(error.message);
       btn.disabled = false; btn.textContent = 'Create Account';
@@ -1713,6 +1836,8 @@ async function renderDashboard(activeTab = 'dash') {
   const user = session?.user;
   if (!user) return renderLogin();
 
+  window.trackPageView(activeTab === 'dash' ? 'Dashboard' : 'Activities');
+
   // Handle Stripe Redirects
   const params = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
   if (params.get('success')) {
@@ -1787,7 +1912,9 @@ async function renderDashboard(activeTab = 'dash') {
     renderActivities();
   }
 
-  app.insertAdjacentHTML('beforeend', '<div id="enroll-modal" class="cropper-modal-overlay" style="display:none;"></div>');
+  if (!document.getElementById('enroll-modal')) {
+    app.insertAdjacentHTML('beforeend', '<div id="enroll-modal" class="cropper-modal-overlay" style="display:none;"></div>');
+  }
 }
 
 // --- DASHBOARD SUB-RENDERERS ---
@@ -1974,7 +2101,10 @@ async function renderActivities() {
               <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">${activity.start_time?.slice(0, 5)} - ${activity.end_time?.slice(0, 5)}</div>
             </div>
             <div style="text-align: right;">
-              <div style="padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; background: ${isFull ? '#ef4444' : '#22c55e'}; color: #fff; margin-bottom: 4px;">
+              <div style="padding: 6px 14px; border-radius: 12px; font-size: 0.75rem; font-weight: 900; background: ${isFull ? '#ef4444' : '#22c55e'}; color: #fff; text-transform: uppercase; letter-spacing: 0.05em;">
+                ${isFull ? 'Waitlist' : 'Book'}
+              </div>
+            </div>
           </button>
         `;
       }));
@@ -2552,7 +2682,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
     if (capacityStatus.full) {
       const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
       const eventDate = enrollDateSelect.value;
-      if (selectedKidIds.length === 0) { alert('Please select at least one child to join the waitlist.'); return; }
+      if (selectedKidIds.length === 0) { showToast('Please select at least one child to join the waitlist.', 'error'); return; }
       if (!confirm(`This session is full. Would you like to join the waitlist for ${selectedKidIds.length} child(ren) on ${eventDate}?`)) return;
       continueBtn.disabled = true; continueBtn.textContent = 'Joining waitlist...';
       try {
@@ -2563,10 +2693,10 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
           const result = await joinWaitlist(activity.id, kidId, parentId, eventDate);
           results.push(result);
         }
-        alert(`You've been added to the waitlist! Your position: #${results[results.length - 1].position}. We'll send you a message when a spot opens.`);
+        showToast(`Waitlist Success! Position: #${results[results.length - 1].position}. We'll notify you when a spot opens.`);
         modal.remove();
       } catch (err) {
-        alert('Failed to join waitlist: ' + err.message);
+        showToast('Failed to join waitlist: ' + err.message, 'error');
         continueBtn.disabled = false; continueBtn.textContent = 'Continue';
       }
       return;
@@ -2586,8 +2716,8 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
       postcode: document.getElementById('c-postcode').value
     }
     const termsCheckbox = document.getElementById('c-terms');
-    if (termsCheckbox && !termsCheckbox.checked) { alert('Please accept the terms and conditions.'); return; }
-    if (!contact.first_name || !contact.last_name || !contact.email || !contact.phone) { alert('Please fill in required contact details.'); return; }
+    if (termsCheckbox && !termsCheckbox.checked) { showToast('Please accept the terms and conditions.', 'error'); return; }
+    if (!contact.first_name || !contact.last_name || !contact.email || !contact.phone) { showToast('Please fill in required contact details.', 'error'); return; }
 
     if (activity.required_permissions && activity.required_permissions.length > 0) {
       const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
@@ -2657,7 +2787,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
     const answers = {};
     for (let i = 0; i < perms.length; i++) {
       const selected = modal.querySelector(`input[name="perm-${i}"]:checked`);
-      if (!selected) { alert('Please answer all permission questions.'); return; }
+      if (!selected) { showToast('Please answer all permission questions.', 'error'); return; }
       answers[perms[i]] = selected.value;
     }
     selectedPermissionsAnswers = answers;
@@ -2696,7 +2826,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
 
   confirmBtn.onclick = async () => {
     const waiverAccept = document.getElementById('w-accept');
-    if (!waiverAccept.checked) { alert('You must accept the waiver to continue.'); return; }
+    if (!waiverAccept.checked) { showToast('You must accept the waiver to continue.', 'error'); return; }
 
     const eventDate = enrollDateSelect.value;
     const selectedKidIds = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
@@ -2753,7 +2883,7 @@ window.openEnrollModal = async (activity, preSelectedDate = null) => {
         }
       }
 
-      alert('Payment Error: ' + errorMsg);
+      showToast('Payment Error: ' + errorMsg, 'error');
       confirmBtn.disabled = false;
       confirmBtn.textContent = 'Confirm & Pay';
     }
@@ -3147,7 +3277,7 @@ async function renderChildForm(child = null, fromOnboarding = false) {
         )
       }
       initApp();
-    } catch (error) { alert(error.message); btn.disabled = false; }
+    } catch (error) { showToast(error.message, 'error'); btn.disabled = false; }
   }
 }
 
@@ -3228,6 +3358,7 @@ async function smartDashboardRedirect() {
     initApp();
   }
 }
+window.smartDashboardRedirect = smartDashboardRedirect;
 
 async function renderProviderDashboard() {
   console.log('--- renderProviderDashboard Started ---');
@@ -3470,7 +3601,8 @@ async function renderProviderDashboard() {
   }
 }
 
-async function renderPermissionsManager(provider) {
+window.renderPermissionsManager = async (providerId, listId = 'my-p-list', addBtnId = 'a-perm') => {
+  const provider = { id: providerId };
   const standardPerms = [
     { label: 'Animals', description: 'I give permission for my child to handle, stroke and learn about animals on visits to farms and other educational settings, or touch, handle and stroke animals we have invited into the setting (where risk assessments are in place).' },
     { label: 'Antihistamine (Piriton)', description: 'I give permission for my child to be administered piriton antihistamine if needed – parents would be informed prior to administration of piriton.' },
@@ -3500,18 +3632,20 @@ async function renderPermissionsManager(provider) {
       perms = await getProviderPermissions(provider.id);
     }
     perms = Array.from(new Map(perms.map(p => [p.label, p])).values());
-    document.getElementById('my-p-list').innerHTML = perms.map(p => `
+    document.getElementById(listId).innerHTML = perms.map(p => `
       <div class="card" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; border: 1px solid #e2e8f0; margin-bottom: 1rem;">
         <div style="flex: 1;">
           <h3 style="font-size: 1rem; color: #1e293b; margin-bottom: 6px;">${p.label}</h3>
           <p style="font-size: 0.8rem; color: #64748b; line-height: 1.4; margin: 0;">${p.description}</p>
         </div>
-        <button onclick='window.handleEditPermission(${JSON.stringify(p).replace(/'/g, "\\'")})' class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</button>
+        <button onclick='window.handleEditPermission(${JSON.stringify(p).replace(/'/g, "\\'")}, "${listId}", "${addBtnId}")' class="btn btn-outline" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</button>
       </div>
     `).join('');
-    document.getElementById('a-perm').onclick = () => renderPermissionForm(provider.id);
+    const addBtn = document.getElementById(addBtnId);
+    if (addBtn) addBtn.onclick = () => window.renderPermissionForm(providerId, null, listId, addBtnId);
   } catch (err) {
-    document.getElementById('my-p-list').innerHTML = `<p style="color:red; text-align:center;">Error loading permissions.</p>`;
+    const list = document.getElementById(listId);
+    if (list) list.innerHTML = `<p style="color:red; text-align:center;">Error loading permissions.</p>`;
   }
 }
 
@@ -4111,7 +4245,7 @@ window.handleViewActivityBookings = async (activity) => {
 
     loadWaitlistData();
 
-    document.getElementById('b-p-dash').onclick = renderProviderDashboard;
+    document.getElementById('b-p-dash').onclick = () => window.smartDashboardRedirect();
 
     window.toggleFamilyGroup = (groupId) => {
       const el = document.getElementById('details_' + groupId);
@@ -4190,7 +4324,7 @@ window.handleEditActivity = (a) => { getMyProvider().then(p => renderAddActivity
 
 function renderCreateProviderForm() {
   app.innerHTML = `<div class="container"><div class="card mt-4"><form id="p-form"><div class="form-group"><label>Business Name</label><input type="text" id="bn" required></div><button type="submit" class="btn btn-primary">Create</button></form></div></div>`
-  document.getElementById('p-form').onsubmit = async (e) => { e.preventDefault(); try { await createProvider(document.getElementById('bn').value, ''); smartDashboardRedirect(); } catch (error) { alert(error.message) } }
+  document.getElementById('p-form').onsubmit = async (e) => { e.preventDefault(); try { await createProvider(document.getElementById('bn').value, ''); smartDashboardRedirect(); } catch (error) { showToast(error.message, 'error') } }
 }
 
 async function renderAddActivityForm(providerId, activity = null) {
@@ -4346,7 +4480,7 @@ async function renderAddActivityForm(providerId, activity = null) {
       }
       if (isEdit) { await updateActivity(activity.id, data) } else { await addActivity(providerId, data) }
       smartDashboardRedirect();
-    } catch (error) { console.error(error); alert('Save failed: ' + error.message); btn.disabled = false; btn.textContent = isEdit ? 'Update Activity' : 'Save Activity'; }
+    } catch (error) { console.error(error); showToast('Save failed: ' + error.message, 'error'); btn.disabled = false; btn.textContent = isEdit ? 'Update Activity' : 'Save Activity'; }
   }
 }
 
@@ -4535,13 +4669,13 @@ async function renderMyProfile() {
         photo_url: photoUrl,
         metadata: updatedMetadata
       });
-      alert('Profile updated successfully!');
+      showToast('Profile updated successfully!');
       initApp();
     } catch (err) {
       if (err.code === '42703' || err.code === 'PGRST204' || (err.message && err.message.includes('schema cache'))) {
         alert('Eksik Veritabanı Alanları! Lütfen az önce verdiğim SQL komutunu Supabase SQL Editor üzerinden çalıştırın (email, phone ve photo_url alanlarını eklemek için).');
       } else {
-        alert('Error updating profile: ' + err.message);
+        showToast('Error updating profile: ' + err.message, 'error');
       }
       btn.disabled = false;
     }
@@ -4586,7 +4720,7 @@ function renderChangePasswordModal() {
     const confirmPass = document.getElementById('confirm-pass').value;
 
     if (newPass !== confirmPass) {
-      alert('Passwords do not match!');
+      showToast('Passwords do not match!', 'error');
       return;
     }
 
@@ -4601,11 +4735,11 @@ function renderChangePasswordModal() {
 
       await updatePassword(newPass);
       console.log('Password update successful!');
-      alert('Password updated successfully!');
+      showToast('Password updated successfully!');
       modal.remove();
     } catch (err) {
       console.error('Password update error:', err);
-      alert('Error updating password: ' + err.message);
+      showToast('Error updating password: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Update';
     } finally {
@@ -4825,7 +4959,7 @@ window.renderAddPollForm = async (providerId, poll = null) => {
       const options = Array.from(document.querySelectorAll('.poll-opt')).map(i => i.value.trim()).filter(v => v);
       console.log('Options collected:', options);
       if (options.length < 2) {
-        alert('Please add at least 2 options');
+        showToast('Please add at least 2 options', 'error');
         btn.disabled = false;
         btn.textContent = isEdit ? 'Update Poll' : 'Post Poll';
         return;
@@ -4853,11 +4987,11 @@ window.renderAddPollForm = async (providerId, poll = null) => {
   };
 }
 
-window.handleEditPermission = (permission) => {
-  renderPermissionForm(permission.provider_id, permission);
+window.handleEditPermission = (permission, listId = 'my-p-list', addBtnId = 'a-perm') => {
+  window.renderPermissionForm(permission.provider_id, permission, listId, addBtnId);
 }
 
-function renderPermissionForm(providerId, permission = null) {
+window.renderPermissionForm = (providerId, permission = null, listId = 'my-p-list', addBtnId = 'a-perm') => {
   const isEdit = !!permission;
   const modal = document.createElement('div');
   modal.className = 'cropper-modal-overlay';
@@ -4902,11 +5036,7 @@ function renderPermissionForm(providerId, permission = null) {
       if (isEdit) data.id = permission.id;
       await saveProviderPermission(providerId, data);
       modal.remove();
-      if (document.getElementById('admin-tab-content')) {
-        loadAdminPermissions();
-      } else {
-        renderProviderDashboard();
-      }
+      window.renderPermissionsManager(providerId, listId, addBtnId);
     } catch (err) {
       alert('Save failed: ' + err.message);
       btn.disabled = false; btn.textContent = 'Save Permission';
@@ -4919,7 +5049,7 @@ function renderPermissionForm(providerId, permission = null) {
       try {
         await deleteProviderPermission(permission.id);
         modal.remove();
-        renderProviderDashboard();
+        window.renderPermissionsManager(providerId, listId, addBtnId);
       } catch (err) {
         alert('Delete failed: ' + err.message);
       }
@@ -5355,511 +5485,36 @@ async function renderProviderFriendsTab() {
   }
 }
 
+import { renderAdminDashboard } from './admin'
 window.renderAdminDashboard = renderAdminDashboard;
-async function renderAdminDashboard() {
-  const profile = await getMyProfile().catch(() => ({ role: 'admin' }));
-  app.innerHTML = `
-    <div class="admin-layout" style="display: flex; min-height: 100vh; background: #f8fafc; font-family: 'Inter', sans-serif;">
-      <!-- Sidebar -->
-      <aside class="admin-sidebar" style="width: 280px; background: #fff; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; z-index: 100;">
-        <div style="padding: 2rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid #f1f5f9;">
-          <img src="${logo}" alt="Urban Tribe" style="height: 35px;">
 
-        </div>
-        
-        <nav style="flex: 1; padding: 1.5rem; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;">
-          <p style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin: 1rem 0 0.75rem 0.75rem;">Main Menu</p>
-          <button class="tab-btn active" data-tab="dashboard" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" /></svg>
-            Overview
-          </button>
-          <button class="tab-btn" data-tab="users" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-3.833-6.248 3 3 0 0 0-4.885-3.133 3 3 0 0 0-4.885 3.133 4.125 4.125 0 0 0-3.833 6.248 9.337 9.337 0 0 0 4.121.952 9.38 9.38 0 0 0 2.625-.372" /></svg>
-            Users
-          </button>
-          <button class="tab-btn" data-tab="providers" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72L4.318 3.44A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72m-13.5 8.65h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" /></svg>
-            Providers
-          </button>
-          <button class="tab-btn" data-tab="activities" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 3h.008v.008H12V18Zm-3-6h.008v.008H9v-.008ZM9 15h.008v.008H9V15Zm0 3h.008v.008H9V18Zm6-6h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008V15Zm0 3h.008v.008h-.008V18Z" /></svg>
-            Activities
-          </button>
-          <button class="tab-btn" data-tab="news" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" /></svg>
-            News & Polls
-          </button>
-          <button class="tab-btn" data-tab="friends" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a5.97 5.97 0 0 0-.94 3.197m0 0a5.97 5.97 0 0 0 3.198 5.311M12 12.75a3.375 3.375 0 1 1 0-6.75 3.375 3.375 0 0 1 0 6.75Zm6.375-2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0ZM7.5 10.5a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
-            Friends
-          </button>
-          <button class="tab-btn" data-tab="invoices" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>
-            Bookings
-          </button>
-          <button class="tab-btn" data-tab="newsletter" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-            Interest List
-          </button>
-          <button class="tab-btn" data-tab="permissions" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" /></svg>
-            Permissions
-          </button>
-          
-          <p style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin: 2rem 0 0.75rem 0.75rem;">System</p>
-          <button class="tab-btn" id="side-nav-messages" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.028Z" /></svg>
-            Messages
-          </button>
-          <button class="tab-btn" id="side-nav-mod" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg>
-            Moderation
-          </button>
-          <button class="tab-btn" id="side-nav-logout" style="text-align: left; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 12px; padding: 12px 16px; color: #ef4444;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width: 20px; height: 20px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
-            Exit Console
-          </button>
-        </nav>
-        
-        <div style="padding: 1.5rem; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; background: #fafafa;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; box-shadow: 0 4px 10px rgba(166, 206, 57, 0.3);">A</div>
-          <div style="min-width: 0;">
-            <p style="font-size: 0.85rem; font-weight: 800; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Adele</p>
-            <p style="font-size: 0.7rem; color: #64748b; margin: 0;">Super Admin</p>
-          </div>
-        </div>
-      </aside>
 
-      <!-- Main Content -->
-      <main id="admin-main-content" style="flex: 1; padding: 2.5rem; overflow-y: auto; height: 100vh; position: relative;">
-        <div class="admin-stats-grid" id="admin-stats-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
-          <div class="stat-card card" style="margin-bottom: 0;">
-            <div class="stat-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem;">Total Users</div>
-            <div id="stat-users" class="stat-value" style="font-size: 1.75rem; font-weight: 900; color: #1e293b;">...</div>
-          </div>
-          <div class="stat-card card" style="margin-bottom: 0;">
-            <div class="stat-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem;">Providers</div>
-            <div id="stat-providers" class="stat-value" style="font-size: 1.75rem; font-weight: 900; color: #1e293b;">...</div>
-          </div>
-          <div class="stat-card card" style="margin-bottom: 0;">
-            <div class="stat-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem;">Activities</div>
-            <div id="stat-activities" class="stat-value" style="font-size: 1.75rem; font-weight: 900; color: #1e293b;">...</div>
-          </div>
-          <div class="stat-card card" style="margin-bottom: 0;">
-            <div class="stat-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; color: #94a3b8; margin-bottom: 0.5rem;">Bookings</div>
-            <div id="stat-bookings" class="stat-value" style="font-size: 1.75rem; font-weight: 900; color: #1e293b;">...</div>
-          </div>
-        </div>
-        
-        <div id="admin-tab-content" class="fade-up" style="animation-delay: 0.1s;">
-           <div id="admin-users-list">
-             <div style="text-align: center; padding: 5rem 2rem; color: #94a3b8;">
-               <div style="font-size: 2.5rem; margin-bottom: 1.5rem;">🔍</div>
-               <p style="font-weight: 600;">Loading administrative data...</p>
-             </div>
-           </div>
-        </div>
-      </main>
 
-      <!-- NEW: Mobile Bottom Nav -->
-      <nav class="admin-bottom-nav">
-        <button class="admin-nav-item active" data-tab="dashboard">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" /></svg>
-          <span>Dash</span>
-        </button>
-        <button class="admin-nav-item" data-tab="activities">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25" /></svg>
-          <span>Activities</span>
-        </button>
-        <button class="admin-nav-item" data-tab="news">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5" /></svg>
-          <span>News</span>
-        </button>
-        <button class="admin-nav-item" id="admin-more-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
-          <span>More</span>
-        </button>
-      </nav>
-
-      <!-- NEW: More Menu Overlay -->
-      <div id="admin-more-menu" class="admin-more-overlay">
-        <button class="overlay-close" id="admin-close-more">&times;</button>
-        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 2rem;">System Menu</h2>
-        <div class="admin-overlay-grid">
-          <div class="overlay-item" data-tab="users">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 8px;"><path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-3.833-6.248 3 3 0 0 0-4.885-3.133 3 3 0 0 0-4.885 3.133 4.125 4.125 0 0 0-3.833 6.248 9.337 9.337 0 0 0 4.121.952 9.38 9.38 0 0 0 2.625-.372" /></svg>
-            Users
-          </div>
-          <div class="overlay-item" data-tab="providers">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 24px; height: 24px; margin-bottom: 8px;"><path d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21" /></svg>
-            Providers
-          </div>
-          <div class="overlay-item" data-tab="friends">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21" /></svg>
-            Friends
-          </div>
-          <div class="overlay-item" data-tab="invoices">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5" /></svg>
-            Bookings
-          </div>
-          <div class="overlay-item" data-tab="newsletter">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75" /></svg>
-            Interest List
-          </div>
-          <div class="overlay-item" data-tab="permissions">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036" /></svg>
-            Permissions
-          </div>
-          <div class="overlay-item" id="over-nav-messages">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M7.5 8.25h9m-9 3H12" /></svg>
-            Messages
-          </div>
-          <div class="overlay-item" id="over-nav-mod">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-            Moderation
-          </div>
-          <div class="overlay-item" id="over-nav-logout" style="color: #ef4444;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6" /></svg>
-            Exit Console
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Attach Events
-  const tabs = document.querySelectorAll('[data-tab]');
-  tabs.forEach(t => {
-    t.onclick = () => {
-      // Close overlay if open
-      document.getElementById('admin-more-menu').classList.remove('open');
-
-      // Update active state
-      document.querySelectorAll('[data-tab]').forEach(btn => btn.classList.remove('active'));
-      t.classList.add('active');
-
-      const tab = t.dataset.tab;
-      const content = document.getElementById('admin-tab-content');
-      content.classList.remove('fade-up');
-      void content.offsetWidth;
-      content.classList.add('fade-up');
-
-      if (tab === 'dashboard') loadAdminSummary();
-      else if (tab === 'users') loadAdminUsers();
-      else if (tab === 'providers') loadAdminProviders();
-      else if (tab === 'activities') loadAdminActivities();
-      else if (tab === 'news') loadAdminNewsAndPolls();
-      else if (tab === 'friends') loadAdminFriends();
-      else if (tab === 'invoices') loadAdminInvoices();
-      else if (tab === 'newsletter') loadAdminNewsletter();
-      else if (tab === 'permissions') loadAdminPermissions();
-    };
-  });
-
-  // Mobile More Toggle
-  document.getElementById('admin-more-btn').onclick = () => {
-    document.getElementById('admin-more-menu').classList.add('open');
-  };
-  document.getElementById('admin-close-more').onclick = () => {
-    document.getElementById('admin-more-menu').classList.remove('open');
-  };
-
-  document.getElementById('side-nav-messages')?.addEventListener('click', () => renderMessagesTab());
-  document.getElementById('over-nav-messages')?.addEventListener('click', () => {
-    document.getElementById('admin-more-menu').classList.remove('open');
-    renderMessagesTab();
-  });
-
-  document.getElementById('side-nav-mod')?.addEventListener('click', () => loadAdminModeration());
-  document.getElementById('over-nav-mod')?.addEventListener('click', () => {
-    document.getElementById('admin-more-menu').classList.remove('open');
-    loadAdminModeration();
-  });
-
-  document.getElementById('side-nav-logout')?.addEventListener('click', () => handleLogout());
-  document.getElementById('over-nav-logout')?.addEventListener('click', () => handleLogout());
-
-  loadAdminStats();
-  loadAdminSummary();
-}
-
-function renderAdminBottomNav(activeTab) {
-  return `
-    <nav class="bottom-nav">
-      <button class="nav-item ${activeTab === 'dashboard' ? 'active' : ''}" id="nav-admin-dash">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" />
-        </svg>
-        <span>Home</span>
-      </button>
-      <button class="nav-item ${activeTab === 'messages' ? 'active' : ''}" id="nav-admin-messages" style="position: relative;">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.028Z" />
-        </svg>
-        <span>Chat</span>
-        <div id="msg-badge" style="display: none; position: absolute; top: 4px; right: 20%; background: #ef4444; color: white; font-size: 0.65rem; font-weight: 800; min-width: 16px; height: 16px; border-radius: 8px; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid #fff;"></div>
-      </button>
-      <button class="nav-item ${activeTab === 'moderation' ? 'active' : ''}" id="nav-admin-mod">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-        </svg>
-        <span>Mod</span>
-      </button>
-      <button class="nav-item" id="nav-logout-admin">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
-        </svg>
-        <span>Exit</span>
-      </button>
-    </nav>
-  `;
-}
-
-function attachAdminNavEvents() {
-  document.getElementById('nav-admin-dash')?.addEventListener('click', () => renderAdminDashboard());
-  document.getElementById('nav-admin-messages')?.addEventListener('click', () => renderMessagesTab());
-  document.getElementById('nav-admin-mod')?.addEventListener('click', () => loadAdminModeration());
-  document.getElementById('nav-logout-admin')?.addEventListener('click', () => handleLogout());
-}
-
-async function loadAdminStats() {
-  try {
-    const stats = await adminGetStats();
-    document.getElementById('stat-users').textContent = stats.users;
-    document.getElementById('stat-providers').textContent = stats.providers;
-    document.getElementById('stat-activities').textContent = stats.activities;
-    document.getElementById('stat-bookings').textContent = stats.bookings;
-  } catch (err) {
-    console.error('Error loading admin stats:', err);
-  }
-}
-
-async function loadAdminModeration() {
-  const container = document.getElementById('admin-tab-content');
-  if (!container) return;
-
-  // Visually deselect all tab buttons and highlight Mod in bottom nav
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-    btn.style.color = '#64748b';
-    btn.style.fontWeight = '600';
-    btn.style.borderBottom = 'none';
-  });
-
-  container.innerHTML = '<div style="text-align:center;padding:2rem;color:#64748b;">Loading moderation queue...</div>';
-  try {
-    // Admin sees ALL comments (pass null for providerId)
-    const comments = await getProviderComments(null);
-
-    if (!comments || !comments.length) {
-      container.innerHTML = `
-        <div style="text-align:center;padding:4rem 2rem;">
-          <div style="font-size:2.5rem;margin-bottom:1rem;">✅</div>
-          <p style="font-weight:700;color:#1e293b;">All clear!</p>
-          <p style="font-size:0.85rem;color:#64748b;">No comments pending moderation.</p>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = `
-      <h3 style="font-weight:800;color:#1e293b;margin-bottom:1rem;">Moderation Queue <span style="font-size:0.8rem;background:#fef9c3;color:#854d0e;padding:2px 10px;border-radius:20px;">${comments.length}</span></h3>
-      <div id="mod-comments-list">
-        ${comments.map(c => `
-          <div class="card" style="margin-bottom:1rem;padding:1.25rem;">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
-              <div style="display:flex;align-items:center;gap:0.75rem;">
-                <div style="background:#f1f5f9;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#64748b;font-size:0.8rem;">
-                  ${(c.profiles?.full_name || 'U').charAt(0)}
-                </div>
-                <div>
-                  <p style="font-weight:700;font-size:0.9rem;margin:0;color:#1e293b;">${c.profiles?.full_name || 'Anonymous'}</p>
-                  <p style="font-size:0.75rem;color:#64748b;margin:0;">On: ${c.activities?.name || c.news?.title || 'Unknown'}</p>
-                </div>
-              </div>
-              <div style="text-align:right;">
-                <span style="font-size:0.65rem;padding:2px 8px;border-radius:12px;font-weight:800;text-transform:uppercase;${c.status === 'approved' ? 'background:#dcfce7;color:#166534;' :
-        c.status === 'rejected' ? 'background:#fee2e2;color:#991b1b;' :
-          'background:#fef9c3;color:#854d0e;'
-      }">${c.status || 'pending'}</span>
-                <p style="font-size:0.7rem;color:#94a3b8;margin:4px 0 0 0;">${new Date(c.created_at).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <p style="font-size:0.9rem;color:#334155;line-height:1.5;margin:0 0 1rem 0;background:#f8fafc;padding:0.75rem;border-radius:8px;">${c.content}</p>
-            <div style="display:flex;justify-content:flex-end;gap:0.5rem;">
-              <select onchange="window.handleAdminCommentModeration('${c.id}', this.value)" style="padding:4px 8px;border-radius:6px;font-size:0.75rem;border:1px solid #cbd5e1;outline:none;background:#fff;cursor:pointer;">
-                <option value="">Actions...</option>
-                <option value="approved" ${c.status === 'approved' ? 'disabled' : ''}>Publish</option>
-                <option value="pending" ${c.status === 'pending' ? 'disabled' : ''}>Unpublish</option>
-                <option value="delete">Delete Forever</option>
-              </select>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  } catch (err) {
-    container.innerHTML = `<p style="color:red;text-align:center;padding:2rem;">Failed to load moderation queue: ${err.message}</p>`;
-  }
-}
-
-window.handleAdminCommentModeration = async (commentId, action) => {
-  if (!action) return;
-  if (action === 'delete') {
-    if (!confirm('Delete this comment forever?')) return;
-    try { await deleteComment(commentId); loadAdminModeration(); } catch (err) { alert('Delete failed: ' + err.message); }
-    return;
-  }
-  try {
-    await updateCommentStatus(commentId, action);
-    loadAdminModeration();
-  } catch (err) { alert('Update failed: ' + err.message); }
-};
-
-async function loadAdminProviders() {
-  const container = document.getElementById('admin-tab-content');
-  if (!container) return;
-  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading providers...</p>';
-  try {
-    const providers = await fetchAllProviders();
-    container.innerHTML = `
-      <div class="admin-table-container">
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Business</th>
-              <th>Owner ID</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${providers.map(p => `
-              <tr>
-                <td style="font-weight: 600;">${p.business_name}</td>
-                <td style="font-size: 0.7rem; color: #64748b;">${p.owner_id}</td>
-                <td>
-                  <button onclick='window.renderEditProviderModal(${JSON.stringify(p).replace(/'/g, "&apos;")})' class="btn" style="width: auto; padding: 4px 8px; font-size: 0.7rem; background: #f1f5f9; color: #475569;">Edit</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
-  } catch (err) {
-    container.innerHTML = `<p style="color: red;">Failed to load providers: ${err.message}</p>`;
-  }
-}
-
-window.renderEditProviderModal = (provider) => {
-  const modal = document.createElement('div');
-  modal.className = 'cropper-modal-overlay';
-  modal.style.display = 'flex';
-  modal.style.zIndex = '1500';
-  modal.innerHTML = `
-    <div class="modal-content" style="max-width: 500px; width: 95%; background: #fff; border-radius: 24px; padding: 2rem;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h2 style="font-size: 1.25rem; font-weight: 800; color: #1e293b; margin: 0;">Edit Provider</h2>
-        <button onclick="this.closest('.cropper-modal-overlay').remove()" style="background: none; border: none; font-size: 1.5rem; color: #94a3b8; cursor: pointer;">×</button>
-      </div>
-      <form id="admin-edit-prov-form">
-        <div class="form-group"><label>Business Name</label><input type="text" id="edit-p-name" value="${provider.business_name}" required></div>
-        <div class="form-group"><label>Description</label><textarea id="edit-p-desc" rows="3">${provider.description || ''}</textarea></div>
-        <div class="form-group"><label>Terms & Conditions</label><textarea id="edit-p-terms" rows="5">${provider.terms_and_conditions || ''}</textarea></div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-      </form>
-    </div>
-  `;
-  document.body.appendChild(modal);
-
-  modal.querySelector('#admin-edit-prov-form').onsubmit = async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('button');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-    try {
-      await updateProvider(provider.id, {
-        business_name: document.getElementById('edit-p-name').value,
-        description: document.getElementById('edit-p-desc').value,
-        terms_and_conditions: document.getElementById('edit-p-terms').value
-      });
-      alert('Provider updated!');
-      modal.remove();
-      loadAdminProviders();
-    } catch (err) {
-      alert('Update failed: ' + err.message);
-      btn.disabled = false;
-      btn.textContent = 'Save Changes';
-    }
-  };
-};
 
 async function loadAdminSummary() {
   const container = document.getElementById('admin-tab-content');
-  container.innerHTML = `<div style="text-align: center; padding: 3rem;"><div class="spinner"></div><p class="mt-4">Gathering platform overview...</p></div>`;
-
+  if (!container) return;
+  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Gathering platform overview...</p>';
   try {
-    const [usersRes, providersRes, activitiesRes, newsRes, reportsRes, bookingsRes] = await Promise.all([
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(5),
-      supabase.from('profiles').select('*').eq('role', 'provider').order('created_at', { ascending: false }).limit(5),
+    const [bookingsRes, activitiesRes, reportsRes, providersRes] = await Promise.all([
+      supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name)').order('created_at', { ascending: false }).limit(5),
       supabase.from('activities').select('*, providers(business_name)').order('created_at', { ascending: false }).limit(5),
-      supabase.from('news').select('*').order('created_at', { ascending: false }).limit(3),
-      supabase.from('comments').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('invoices').select('*, activities(name, start_time, end_time), profiles:parent_id(full_name), children(name)').order('created_at', { ascending: false }).limit(20)
+      supabase.from('comments').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('profiles').select('*').eq('role', 'provider').order('created_at', { ascending: false }).limit(5)
     ]);
 
-    const users = usersRes.data || [];
-    const providers = providersRes.data || [];
+    const consolidatedBookings = (bookingsRes.data || []).map(b => ({
+      name: b.activities?.name || 'Unknown Activity',
+      parent: b.profiles?.full_name || 'Anonymous',
+      date: new Date(b.created_at).toLocaleDateString(),
+      amount: b.amount
+    }));
     const activities = activitiesRes.data || [];
-    const news = newsRes.data || [];
     const reportsCount = reportsRes.count || 0;
-
-    // Group bookings for the summary card too
-    const bookingGroups = {};
-    (bookingsRes.data || []).forEach(inv => {
-      const timeKey = new Date(inv.created_at).toISOString().substring(0, 16);
-      const key = `${inv.parent_id}_${inv.activity_id}_${inv.event_date}_${timeKey}`;
-      if (!bookingGroups[key]) {
-        bookingGroups[key] = {
-          ...inv,
-          name: inv.activities?.name || 'Session',
-          parent: inv.profiles?.full_name || 'Parent',
-          date: inv.event_date,
-          startTime: inv.activities?.start_time,
-          endTime: inv.activities?.end_time,
-          items: [inv]
-        };
-      } else {
-        bookingGroups[key].items.push(inv);
-      }
-    });
-    const consolidatedBookings = Object.values(bookingGroups).slice(0, 5);
+    const providers = providersRes.data || [];
 
     container.innerHTML = `
-      <div class="admin-summary-view" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
-        
-        <!-- NEW MEMBERS SECTION -->
-        <div class="card" style="margin-bottom: 0; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9;">
-          <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; font-weight: 800;">
-            <span style="background: rgba(166, 206, 57, 0.1); padding: 8px; border-radius: 12px; font-size: 1.2rem;">👥</span>
-            Recent New Members
-          </h3>
-          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem;">
-            ${users.map(u => `
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border-radius: 16px; background: #fff; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <div style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; color: #64748b;">${u.full_name?.[0] || '?'}</div>
-                  <div>
-                    <p style="font-size: 0.9rem; font-weight: 800; margin: 0; color: #1e293b;">${u.full_name || 'Anonymous'}</p>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin: 2px 0 0 0;">Joined ${new Date(u.created_at).toLocaleDateString()}</p>
-                  </div>
-                </div>
-                <span class="role-badge role-${u.role}" style="font-size: 0.65rem; padding: 4px 8px; border-radius: 8px;">${u.role}</span>
-              </div>
-            `).join('') || '<p style="text-align:center; color:#94a3b8; padding: 1rem;">No users found</p>'}
-          </div>
-          <button class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff; padding: 12px;" onclick="document.querySelector('[data-tab=users]').click()">View All Users</button>
-        </div>
-
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
         <!-- BOOKINGS SECTION -->
         <div class="card" style="margin-bottom: 0; padding: 1.5rem; border-radius: 24px; border: 1px solid #f1f5f9;">
           <h3 style="font-size: 1.1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; font-weight: 800;">
@@ -5925,7 +5580,6 @@ async function loadAdminSummary() {
           </div>
           <button class="btn btn-outline" style="width: 100%; border-radius: 16px; font-weight: 700; color: #1e293b; border-color: #e2e8f0; background: #fff; padding: 12px;" onclick="document.querySelector('[data-tab=providers]').click()">Manage Providers</button>
         </div>
-
       </div>
     `;
   } catch (err) {
@@ -5951,6 +5605,7 @@ async function loadAdminUsers() {
               <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-users" style="cursor: pointer;"></th>
               <th>User</th>
               <th>Email</th>
+              <th>Status</th>
               <th>Role</th>
               <th>Action</th>
             </tr>
@@ -5961,6 +5616,11 @@ async function loadAdminUsers() {
                 <td style="text-align: center;"><input type="checkbox" class="user-select-checkbox" data-user-id="${u.id}" data-user-name="${u.full_name || u.email}" style="cursor: pointer;"></td>
                 <td style="font-weight: 600;">${u.full_name || 'No Name'}</td>
                 <td style="font-size: 0.8rem; color: #64748b;">${u.email || 'N/A'}</td>
+                <td>
+                  <span style="font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; ${u.is_verified ? 'background: #f0fdf4; color: #16a34a; border: 1px solid #dcfce7;' : 'background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;'}">
+                    ${u.is_verified ? 'Verified' : 'Unverified'}
+                  </span>
+                </td>
                 <td><span class="role-badge role-${u.role}">${u.role}</span></td>
                 <td>
                   <select onchange="window.handleAdminUserRoleChange('${u.id}', this.value)" style="padding: 4px; border-radius: 4px; font-size: 0.75rem; border: 1px solid #e2e8f0; outline: none; cursor: pointer;">
@@ -6932,3 +6592,61 @@ async function loadAdminPermissions() {
 // Remove the old separate admin form functions as we now use the unified one
 window.renderAdminAddPermissionForm = null;
 window.handleAdminDeletePermission = null;
+window.loadAdminGoogleSettings = async () => {
+  const container = document.getElementById('admin-tab-content');
+  if (!container) return;
+  container.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading settings...</p>';
+  
+  try {
+    const settings = await getSettings();
+    const gaId = settings.find(s => s.key === 'google_analytics_id')?.value || '';
+    
+    container.innerHTML = `
+      <div style="max-width: 600px; margin: 0 auto; background: #fff; padding: 2.5rem; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <div style="width: 64px; height: 64px; background: #fef3c7; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 2rem;">📊</div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0;">Google Analytics</h2>
+          <p style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">Configure your tracking measurements</p>
+        </div>
+
+        <form id="ga-settings-form" style="display: grid; gap: 1.5rem;">
+          <div class="form-group">
+            <label style="display: block; font-weight: 700; color: #475569; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px;">GA4 Measurement ID</label>
+            <input type="text" id="ga-id-input" value="${gaId}" placeholder="G-XXXXXXXXXX" style="width: 100%; padding: 0.875rem; border-radius: 12px; border: 1px solid #e2e8f0; font-family: monospace;">
+            <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 8px;">Find this in your Google Analytics Admin > Data Streams > Web Stream.</p>
+          </div>
+
+          <div style="background: #f0fdf4; padding: 1rem; border-radius: 12px; border: 1px solid #dcfce7; display: flex; gap: 10px; align-items: flex-start;">
+            <span style="font-size: 1.2rem;">💡</span>
+            <p style="font-size: 0.8rem; color: #166534; line-height: 1.4; margin: 0;">The application will automatically inject the tracking code on every page once a valid ID is saved. No manual code changes required.</p>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-weight: 800; border-radius: 16px;">Save Settings</button>
+        </form>
+      </div>
+    `;
+
+    document.getElementById('ga-settings-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button');
+      const val = document.getElementById('ga-id-input').value.trim();
+      
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+      
+      try {
+        await updateSetting('google_analytics_id', val);
+        alert('Google Analytics settings updated! Please refresh the page for the changes to take effect.');
+        window.loadAdminGoogleSettings();
+      } catch (err) {
+        alert('Failed to save: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Save Settings';
+      }
+    };
+
+  } catch (err) {
+    container.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 2rem;">Error: ${err.message}</p>`;
+  }
+};

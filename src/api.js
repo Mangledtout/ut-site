@@ -5,7 +5,7 @@ export const getMyProfile = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   if (!user) return null;
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -41,7 +41,7 @@ export const addChild = async (name, birth_date, gender, relationship, photo_url
   const user = session?.user;
   if (!user) throw new Error('Not authenticated');
   
-  const { data: child, error: childError } = await supabase.from('children').insert([{ name, birth_date, gender, photo_url }]).select().single();
+  const { data: child, error: childError } = await supabase.from('children').insert([{ name, birth_date, gender, photo_url }]).select().maybeSingle();
   if (childError) throw childError;
   
   const { error: linkError } = await supabase.from('child_guardians').insert([{ child_id: child.id, profile_id: user.id, relationship }]);
@@ -86,9 +86,9 @@ export const getMyProvider = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   if (!user) return null;
-  const { data, error } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (data?.role !== 'provider') return null;
-  const { data: provider, error: pErr } = await supabase.from('providers').select('*').eq('owner_id', user.id).single();
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+  if (profile?.role !== 'provider') return null;
+  const { data: provider, error: pErr } = await supabase.from('providers').select('*').eq('owner_id', user.id).maybeSingle();
   if (pErr && pErr.code !== 'PGRST116') throw pErr;
   return provider;
 }
@@ -96,7 +96,7 @@ export const getMyProvider = async () => {
 export const createProvider = async (business_name, description) => {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
-  const { data, error } = await supabase.from('providers').insert([{ owner_id: user.id, business_name, description }]).select().single();
+  const { data, error } = await supabase.from('providers').insert([{ owner_id: user.id, business_name, description }]).select().maybeSingle();
   if (error) throw error;
   // Update user role to provider
   await supabase.from('profiles').update({ role: 'provider' }).eq('id', user.id);
@@ -134,13 +134,13 @@ export const getProviderActivities = async (providerId) => {
 }
 
 export const addActivity = async (providerId, activityData) => {
-  const { data, error } = await supabase.from('activities').insert([{ ...activityData, provider_id: providerId }]).select().single();
+  const { data, error } = await supabase.from('activities').insert([{ ...activityData, provider_id: providerId }]).select().maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export const updateActivity = async (id, updates) => {
-  const { data, error } = await supabase.from('activities').update(updates).eq('id', id).select().single();
+  const { data, error } = await supabase.from('activities').update(updates).eq('id', id).select().maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -175,13 +175,13 @@ export const getProviderNews = async (providerId) => {
 }
 
 export const addNews = async (providerId, newsData) => {
-  const { data, error } = await supabase.from('news').insert([{ ...newsData, provider_id: providerId, type: newsData.type || 'news' }]).select().single();
+  const { data, error } = await supabase.from('news').insert([{ ...newsData, provider_id: providerId, type: newsData.type || 'news' }]).select().maybeSingle();
   if (error) throw error;
   return data;
 }
 
 export const updateNews = async (id, newsData) => {
-  const { data, error } = await supabase.from('news').update(newsData).eq('id', id).select().single();
+  const { data, error } = await supabase.from('news').update(newsData).eq('id', id).select().maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -192,7 +192,7 @@ export const addPoll = async (providerId, pollData) => {
     description: pollData.description || 'Community Poll',
     provider_id: providerId, 
     type: 'poll' 
-  }]).select().single();
+  }]).select().maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -207,7 +207,7 @@ export const toggleNewsLike = async (newsId, userId, isLiked) => {
 
 // --- BOOKINGS & INVOICES ---
 export const enrollChild = async (enrollmentData) => {
-  const { data, error } = await supabase.from('invoices').insert([enrollmentData]).select().single();
+  const { data, error } = await supabase.from('invoices').insert([enrollmentData]).select().maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -232,7 +232,7 @@ export const getChildEnrollments = async (childId) => {
 }
 
 export const getActivityInvoices = async (activityId) => {
-  const { data, error } = await supabase.from('invoices').select('*, profiles:parent_id(full_name, email), children(name, photo_url)').eq('activity_id', activityId).order('event_date', { ascending: true });
+  const { data, error } = await supabase.from('invoices').select('*, profiles:parent_id(full_name, email), children(name, photo_url), activities(name, start_time, end_time)').eq('activity_id', activityId).order('event_date', { ascending: true });
   if (error) throw error;
   return data;
 }
@@ -262,7 +262,7 @@ export const getThreadComments = async (type, id, targetUserId = null, threadId 
   const { data, error } = await query.order('created_at', { ascending: true });
   if (error) throw error;
   
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
   
   return data.filter(c => {
     const isPrivate = c.content.includes('🔒 [PRIVATE_MESSAGE]');
@@ -293,7 +293,7 @@ export const addComment = async (type, id, content, parentId = null, isPrivate =
   let status = isPrivate ? 'approved' : 'pending';
   if (!isPrivate) {
     try {
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
       if (profile?.role === 'provider' || profile?.role === 'admin') status = 'approved';
     } catch (err) {
       console.error('Error checking role for auto-approval:', err);
@@ -329,7 +329,7 @@ export const getConversations = async () => {
   let query = supabase.from('comments').select('*, activities(id, name), news(id, title), profiles(full_name)');
   
   if (profile?.role === 'provider') {
-    const { data: provider } = await supabase.from('providers').select('id').eq('owner_id', user.id).single();
+    const { data: provider } = await supabase.from('providers').select('id').eq('owner_id', user.id).maybeSingle();
     if (provider) {
       const { data: acts } = await supabase.from('activities').select('id').eq('provider_id', provider.id);
       const { data: news } = await supabase.from('news').select('id').eq('provider_id', provider.id);
@@ -506,7 +506,7 @@ export const adminGetAllActivities = async () => {
 }
 
 export const adminGetAllInvoices = async () => {
-  const { data, error } = await supabase.from('invoices').select('*, activities(name), profiles:parent_id(full_name), children(name)').order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('invoices').select('*, activities(name, start_time, end_time), profiles:parent_id(full_name), children(name)').order('created_at', { ascending: false });
   if (error) throw error;
   return data;
 }
@@ -745,9 +745,9 @@ export const isActivityFull = async (activityId, eventDate) => {
     .from('activities')
     .select('max_children')
     .eq('id', activityId)
-    .single();
+    .maybeSingle();
   if (error) throw error;
-  if (!activity.max_children) return { full: false, booked: 0, max: null };
+  if (!activity || !activity.max_children) return { full: false, booked: 0, max: null };
   const booked = await getActivityBookedCount(activityId, eventDate);
   return { full: booked >= activity.max_children, booked, max: activity.max_children };
 }
@@ -760,7 +760,7 @@ export const joinWaitlist = async (activityId, childId, parentId, eventDate) => 
     .eq('activity_id', activityId)
     .eq('child_id', childId)
     .eq('event_date', eventDate)
-    .single();
+    .maybeSingle();
   if (existing) throw new Error('This child is already on the waitlist for this session.');
 
   // Get next position
@@ -776,7 +776,7 @@ export const joinWaitlist = async (activityId, childId, parentId, eventDate) => 
     .from('waitlist')
     .insert([{ activity_id: activityId, parent_id: parentId, child_id: childId, event_date: eventDate, position, status: 'waiting' }])
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return { ...data, position };
 }
@@ -801,7 +801,7 @@ export const removeFromWaitlist = async (waitlistId) => {
 
 export const notifyWaitlistEntry = async (waitlistEntry, activityName) => {
   // Send private message to the parent via the Urban Tribe provider activity
-  const { data: utProvider } = await supabase.from('providers').select('id').eq('business_name', 'Urban Tribe').single();
+  const { data: utProvider } = await supabase.from('providers').select('id').eq('business_name', 'Urban Tribe').maybeSingle();
   if (!utProvider) throw new Error('Urban Tribe provider not found.');
   const { data: acts } = await supabase.from('activities').select('id').eq('provider_id', utProvider.id).limit(1);
   if (!acts || acts.length === 0) throw new Error('No activity context found for Urban Tribe.');
@@ -837,3 +837,13 @@ export const getWaitlistCountForActivity = async (activityId) => {
   return count || 0;
 }
 
+export const getSettings = async () => {
+  const { data, error } = await supabase.from('settings').select('*');
+  if (error) throw error;
+  return data || [];
+};
+
+export const updateSetting = async (key, value) => {
+  const { error } = await supabase.from('settings').upsert({ key, value, updated_at: new Date() });
+  if (error) throw error;
+};
