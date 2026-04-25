@@ -499,6 +499,14 @@ export const adminUpdateUserRole = async (userId, role) => {
   if (error) throw error;
 }
 
+export const adminChangePassword = async (userId, newPassword) => {
+  const { error } = await supabase.rpc('admin_change_password', { 
+    target_user_id: userId, 
+    new_password: newPassword 
+  });
+  if (error) throw error;
+}
+
 export const adminGetAllActivities = async () => {
   const { data, error } = await supabase.from('activities').select('*, providers(business_name), activity_likes(count), comments(count)').order('created_at', { ascending: false });
   if (error) throw error;

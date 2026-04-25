@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import logo from './assets/logo.png'
 import { 
-  adminGetStats, adminGetAllUsers, adminUpdateUserRole, adminGetAllActivities, adminGetAllInvoices, adminGetAllNews, 
+  adminGetStats, adminGetAllUsers, adminUpdateUserRole, adminChangePassword, adminGetAllActivities, adminGetAllInvoices, adminGetAllNews, 
   adminGetAllProviders, getProviderPermissions, saveProviderPermission, deleteProviderPermission, 
   updateCommentStatus, deleteComment, adminGetNewsletterSignups, getSettings, updateSetting, getMyProfile,
   fetchAllProviders, updateProvider, getWaitlistCountForActivity, getProviderActivities, uploadAttachment,
@@ -319,7 +319,7 @@ window.loadAdminUsers = async () => {
     container.innerHTML = `
       <div class="admin-table-container">
         <table class="admin-table">
-          <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Role</th></tr></thead>
+          <thead><tr><th>User</th><th>Email</th><th>Status</th><th>Role</th><th style="text-align: right;">Actions</th></tr></thead>
           <tbody>
             ${users.map(u => `
               <tr>
@@ -327,6 +327,11 @@ window.loadAdminUsers = async () => {
                 <td>${u.email}</td>
                 <td>${u.is_verified ? 'Verified' : 'Unverified'}</td>
                 <td><span class="role-badge role-${u.role}">${u.role}</span></td>
+                <td style="text-align: right;">
+                  <button onclick="window.handleAdminChangePassword('${u.id}', '${u.email}')" class="btn btn-secondary" style="width: auto; padding: 4px 8px; font-size: 0.7rem; font-weight: 800;">
+                    Change PW
+                  </button>
+                </td>
               </tr>
             `).join('')}
           </tbody>
@@ -343,6 +348,24 @@ window.handleAdminUserRoleChange = async (userId, newRole) => {
     window.showToast('Role updated!');
     window.loadAdminUsers();
   } catch (err) { window.showToast(err.message, 'error'); }
+};
+
+window.handleAdminChangePassword = async (userId, email) => {
+  const newPassword = prompt(`Enter new password for ${email}:`);
+  if (!newPassword) return;
+  if (newPassword.length < 6) {
+    window.showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+  
+  try {
+    window.showToast('Updating password...', 'info');
+    await adminChangePassword(userId, newPassword);
+    window.showToast('Password updated successfully!');
+  } catch (err) { 
+    console.error(err);
+    window.showToast(err.message || 'Error updating password', 'error'); 
+  }
 };
 
 window.loadAdminGoogleSettings = async () => {
